@@ -1156,32 +1156,32 @@ body::after {
   <div class="metrics-grid">
     <div class="metric-card">
       <div class="metric-label">OOS Sharpe</div>
-      <div class="metric-value green glow-green" data-count="2.09" data-decimals="2">0</div>
-      <div class="metric-bar"><div class="metric-bar-fill green" data-width="84"></div></div>
+      <div class="metric-value green glow-green" data-count="2.12" data-decimals="2">0</div>
+      <div class="metric-bar"><div class="metric-bar-fill green" data-width="85"></div></div>
       <div class="metric-sub">Target: 2.50</div>
     </div>
     <div class="metric-card">
       <div class="metric-label">CAGR</div>
-      <div class="metric-value green glow-green" data-count="25.0" data-decimals="1" data-suffix="%">0</div>
-      <div class="metric-bar"><div class="metric-bar-fill green" data-width="72"></div></div>
+      <div class="metric-value green glow-green" data-count="25.3" data-decimals="1" data-suffix="%">0</div>
+      <div class="metric-bar"><div class="metric-bar-fill green" data-width="73"></div></div>
       <div class="metric-sub">Annualized return</div>
     </div>
     <div class="metric-card">
       <div class="metric-label">Max Drawdown</div>
-      <div class="metric-value red" data-count="-6.3" data-decimals="1" data-suffix="%">0</div>
-      <div class="metric-bar"><div class="metric-bar-fill red" data-width="25"></div></div>
+      <div class="metric-value red" data-count="-5.4" data-decimals="1" data-suffix="%">0</div>
+      <div class="metric-bar"><div class="metric-bar-fill red" data-width="22"></div></div>
       <div class="metric-sub">Peak-to-trough</div>
     </div>
     <div class="metric-card">
       <div class="metric-label">Calmar</div>
-      <div class="metric-value blue glow-blue" data-count="3.97" data-decimals="2">0</div>
-      <div class="metric-bar"><div class="metric-bar-fill blue" data-width="79"></div></div>
+      <div class="metric-value blue glow-blue" data-count="4.72" data-decimals="2">0</div>
+      <div class="metric-bar"><div class="metric-bar-fill blue" data-width="94"></div></div>
       <div class="metric-sub">CAGR / Max DD</div>
     </div>
     <div class="metric-card">
       <div class="metric-label">Sortino</div>
-      <div class="metric-value blue" data-count="2.80" data-decimals="2">0</div>
-      <div class="metric-bar"><div class="metric-bar-fill blue" data-width="70"></div></div>
+      <div class="metric-value blue" data-count="3.21" data-decimals="2">0</div>
+      <div class="metric-bar"><div class="metric-bar-fill blue" data-width="80"></div></div>
       <div class="metric-sub">Downside-adjusted</div>
     </div>
     <div class="metric-card">
@@ -1658,6 +1658,7 @@ function animateCoverage() {
 // === Generate experiment data ===
 function generateExperiments() {
   const strategies = [
+    { name: 'Momentum v9.16', sharpe: 2.12, cagr: 25.3, dd: -5.4, grade: 'A+', date: '2026-03-29' },
     { name: 'Momentum v9.15', sharpe: 2.09, cagr: 25.0, dd: -6.3, grade: 'A', date: '2026-03-29' },
     { name: 'Momentum v9.14', sharpe: 2.03, cagr: 24.2, dd: -6.8, grade: 'A', date: '2026-03-28' },
     { name: 'Triple Signal v8.14', sharpe: 1.74, cagr: 19.1, dd: -8.2, grade: 'B+', date: '2026-03-27' },
