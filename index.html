@@ -3,1004 +3,1725 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Quant Trading System Dashboard</title>
+<title>QTS // Quant Trading System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg: #0d1117;
-    --card: #161b22;
-    --border: #30363d;
-    --text: #c9d1d9;
-    --text-dim: #8b949e;
-    --green: #3fb950;
-    --yellow: #d29922;
-    --red: #f85149;
-    --blue: #58a6ff;
-    --purple: #bc8cff;
-    --orange: #d18616;
-    --cyan: #39d353;
-  }
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    padding: 20px;
-    min-height: 100vh;
-  }
-  h1 {
-    text-align: center;
-    font-size: 24px;
-    margin-bottom: 8px;
-    color: #f0f6fc;
-  }
-  .subtitle {
-    text-align: center;
-    color: var(--text-dim);
-    font-size: 14px;
-    margin-bottom: 24px;
-  }
+:root {
+  --bg-deep: #060a0e;
+  --bg: #0a0f14;
+  --bg-card: #0f1519;
+  --bg-card-hover: #141c22;
+  --border: #1a2530;
+  --border-bright: #253545;
+  --text: #c8d6e0;
+  --text-dim: #5a7080;
+  --text-muted: #3a4f5f;
+  --heading: #e8f0f5;
+  --green: #00e676;
+  --green-dim: #00c853;
+  --green-glow: rgba(0,230,118,0.15);
+  --yellow: #ffd740;
+  --yellow-dim: rgba(255,215,64,0.15);
+  --red: #ff5252;
+  --red-dim: rgba(255,82,82,0.15);
+  --blue: #40c4ff;
+  --blue-dim: rgba(64,196,255,0.12);
+  --cyan: #18ffff;
+  --purple: #b388ff;
+  --mono: 'IBM Plex Mono', 'Menlo', monospace;
+  --sans: 'Space Grotesk', -apple-system, sans-serif;
+}
 
-  /* Legend */
-  .legend {
-    display: flex;
-    justify-content: center;
-    gap: 24px;
-    margin-bottom: 24px;
-    flex-wrap: wrap;
-  }
-  .legend-item {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 13px;
-    color: var(--text-dim);
-  }
-  .legend-dot {
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-  }
-  .dot-active { background: var(--green); }
-  .dot-code { background: var(--blue); }
-  .dot-missing { background: var(--red); }
-  .dot-review { background: var(--yellow); }
+* { margin:0; padding:0; box-sizing:border-box; }
 
-  /* Architecture flow */
-  .arch-container {
-    max-width: 1100px;
-    margin: 0 auto;
-  }
+html { scroll-behavior: smooth; }
 
-  /* Tabs */
-  .tabs {
-    display: flex;
-    gap: 4px;
-    margin-bottom: 20px;
-    justify-content: center;
-  }
-  .tab {
-    padding: 8px 20px;
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 14px;
-    color: var(--text-dim);
-    transition: all 0.2s;
-  }
-  .tab:hover { border-color: var(--blue); color: var(--text); }
-  .tab.active { background: var(--blue); color: #fff; border-color: var(--blue); }
+body {
+  font-family: var(--mono);
+  background: var(--bg-deep);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
 
-  .view { display: none; }
-  .view.active { display: block; }
+/* Scanline overlay */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0,230,118,0.008) 2px,
+    rgba(0,230,118,0.008) 4px
+  );
+  pointer-events: none;
+  z-index: 9999;
+}
 
-  /* Layer card */
-  .layer {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    margin-bottom: 16px;
-    overflow: hidden;
-    transition: border-color 0.2s;
-  }
-  .layer:hover { border-color: var(--blue); }
-  .layer-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 14px 20px;
-    cursor: pointer;
-    user-select: none;
-  }
-  .layer-title {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-  .layer-num {
-    background: var(--blue);
-    color: #fff;
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 700;
-    font-size: 14px;
-    flex-shrink: 0;
-  }
-  .layer-name {
-    font-weight: 600;
-    font-size: 16px;
-  }
-  .layer-badge {
-    font-size: 12px;
-    padding: 3px 10px;
-    border-radius: 12px;
-    font-weight: 500;
-  }
-  .badge-active { background: rgba(63,185,80,0.15); color: var(--green); }
-  .badge-partial { background: rgba(210,153,34,0.15); color: var(--yellow); }
-  .badge-code { background: rgba(88,166,255,0.15); color: var(--blue); }
-  .badge-missing { background: rgba(248,81,73,0.15); color: var(--red); }
+/* Noise texture */
+body::after {
+  content: '';
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 9998;
+  opacity: 0.5;
+}
 
-  .layer-body {
-    display: none;
-    padding: 0 20px 16px;
-  }
-  .layer.open .layer-body { display: block; }
-  .layer-arrow {
-    transition: transform 0.2s;
-    color: var(--text-dim);
-  }
-  .layer.open .layer-arrow { transform: rotate(90deg); }
+/* === HEADER === */
+.header {
+  padding: 20px 24px 0;
+  max-width: 1400px;
+  margin: 0 auto;
+}
 
-  /* Component grid */
-  .comp-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 10px;
-    margin-top: 12px;
-  }
-  .comp {
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 12px;
-    position: relative;
-    transition: all 0.2s;
-  }
-  .comp:hover { border-color: var(--blue); transform: translateY(-1px); }
-  .comp-status {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-  }
-  .comp-name { font-weight: 600; font-size: 14px; margin-bottom: 4px; padding-right: 20px; }
-  .comp-file { font-size: 12px; color: var(--text-dim); font-family: monospace; margin-bottom: 4px; }
-  .comp-desc { font-size: 12px; color: var(--text-dim); line-height: 1.5; }
+.header-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
 
-  /* Mapping view */
-  .mapping-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 14px;
-  }
-  .mapping-table th {
-    background: var(--card);
-    padding: 10px 14px;
-    text-align: left;
-    border-bottom: 2px solid var(--border);
-    color: var(--text-dim);
-    font-weight: 600;
-    position: sticky;
-    top: 0;
-  }
-  .mapping-table td {
-    padding: 10px 14px;
-    border-bottom: 1px solid var(--border);
-    vertical-align: top;
-  }
-  .mapping-table tr:hover td { background: rgba(88,166,255,0.05); }
-  .status-tag {
-    display: inline-block;
-    padding: 2px 8px;
-    border-radius: 10px;
-    font-size: 12px;
-    font-weight: 500;
-  }
-  .tag-active { background: rgba(63,185,80,0.15); color: var(--green); }
-  .tag-code { background: rgba(88,166,255,0.15); color: var(--blue); }
-  .tag-missing { background: rgba(248,81,73,0.15); color: var(--red); }
-  .tag-review { background: rgba(210,153,34,0.15); color: var(--yellow); }
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
 
-  /* Stats bar */
-  .stats {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 12px;
-    margin-bottom: 24px;
-  }
-  .stat-card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 16px;
-    text-align: center;
-  }
-  .stat-num {
-    font-size: 32px;
-    font-weight: 700;
-    margin-bottom: 4px;
-  }
-  .stat-label {
-    font-size: 13px;
-    color: var(--text-dim);
-  }
+.logo-mark {
+  width: 36px;
+  height: 36px;
+  border: 2px solid var(--green);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--sans);
+  font-weight: 700;
+  font-size: 16px;
+  color: var(--green);
+  position: relative;
+  box-shadow: 0 0 12px var(--green-glow), inset 0 0 8px var(--green-glow);
+}
 
-  /* Flow diagram */
-  .flow {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0;
-    margin: 24px 0;
-    flex-wrap: wrap;
-  }
-  .flow-node {
-    background: var(--card);
-    border: 2px solid var(--border);
-    border-radius: 8px;
-    padding: 12px 18px;
-    text-align: center;
-    min-width: 140px;
-    transition: all 0.2s;
-    cursor: default;
-  }
-  .flow-node:hover { border-color: var(--blue); transform: scale(1.02); }
-  .flow-node.fn-active { border-color: var(--green); }
-  .flow-node.fn-partial { border-color: var(--yellow); }
-  .flow-node.fn-code { border-color: var(--blue); border-style: dashed; }
-  .flow-node.fn-missing { border-color: var(--red); border-style: dotted; }
-  .flow-node-title { font-weight: 600; font-size: 14px; margin-bottom: 2px; }
-  .flow-node-sub { font-size: 11px; color: var(--text-dim); }
-  .flow-arrow {
-    font-size: 20px;
-    color: var(--text-dim);
-    padding: 0 8px;
-  }
+.logo-text {
+  font-family: var(--sans);
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--heading);
+  letter-spacing: -0.5px;
+}
 
-  /* Priority list */
-  .priority-list {
-    list-style: none;
-    margin-top: 16px;
-  }
-  .priority-list li {
-    display: flex;
-    align-items: flex-start;
-    gap: 10px;
-    padding: 10px 0;
-    border-bottom: 1px solid var(--border);
-  }
-  .priority-list li:last-child { border-bottom: none; }
-  .priority-rank {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 50%;
-    width: 28px;
-    height: 28px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 700;
-    font-size: 13px;
-    flex-shrink: 0;
-  }
-  .priority-content { flex: 1; }
-  .priority-title { font-weight: 600; font-size: 14px; }
-  .priority-desc { font-size: 12px; color: var(--text-dim); margin-top: 2px; }
+.logo-text span {
+  color: var(--text-dim);
+  font-weight: 400;
+  font-size: 13px;
+  margin-left: 8px;
+  font-family: var(--mono);
+}
 
-  /* Gap chart */
-  .gap-bar {
-    display: flex;
-    height: 24px;
-    border-radius: 6px;
-    overflow: hidden;
-    margin: 8px 0;
-  }
-  .gap-segment {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 11px;
-    font-weight: 600;
-    color: #fff;
-    transition: width 0.5s;
-  }
-  .gap-active { background: var(--green); }
-  .gap-code { background: var(--blue); }
-  .gap-missing { background: var(--red); opacity: 0.7; }
+.header-meta {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  font-size: 11px;
+  color: var(--text-dim);
+}
 
-  @media (max-width: 600px) {
-    .comp-grid { grid-template-columns: 1fr; }
-    .flow { flex-direction: column; }
-    .flow-arrow { transform: rotate(90deg); }
-    .stats { grid-template-columns: 1fr 1fr; }
-  }
+.header-meta .pulse {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--green);
+  display: inline-block;
+  animation: pulse 2s ease-in-out infinite;
+  margin-right: 4px;
+  box-shadow: 0 0 6px var(--green);
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.8); }
+}
+
+/* === SYSTEM STATUS BAR === */
+.sys-status {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.status-bar {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+
+.status-cell {
+  background: var(--bg-card);
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.status-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.status-indicator.green {
+  background: var(--green);
+  box-shadow: 0 0 8px rgba(0,230,118,0.4);
+}
+.status-indicator.yellow {
+  background: var(--yellow);
+  box-shadow: 0 0 8px rgba(255,215,64,0.4);
+}
+.status-indicator.red {
+  background: var(--red);
+  box-shadow: 0 0 8px rgba(255,82,82,0.4);
+  animation: pulse-red 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse-red {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.status-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.status-label {
+  font-size: 10px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 2px;
+}
+
+.status-value {
+  font-size: 12px;
+  color: var(--text);
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* === PERFORMANCE METRICS === */
+.metrics-section {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 24px 20px;
+}
+
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 12px;
+}
+
+.metric-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 16px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  transition: border-color 0.3s, transform 0.2s;
+}
+
+.metric-card:hover {
+  border-color: var(--border-bright);
+  transform: translateY(-2px);
+}
+
+.metric-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--green);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.metric-card:hover::before { opacity: 1; }
+
+.metric-label {
+  font-size: 10px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  margin-bottom: 8px;
+}
+
+.metric-value {
+  font-family: var(--sans);
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--heading);
+  line-height: 1;
+  margin-bottom: 8px;
+}
+
+.metric-value.green { color: var(--green); }
+.metric-value.red { color: var(--red); }
+.metric-value.blue { color: var(--blue); }
+.metric-value.yellow { color: var(--yellow); }
+
+.metric-bar {
+  height: 3px;
+  background: var(--border);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-top: 4px;
+}
+
+.metric-bar-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 1.5s cubic-bezier(0.16,1,0.3,1);
+  width: 0;
+}
+
+.metric-bar-fill.green { background: var(--green); box-shadow: 0 0 6px var(--green-glow); }
+.metric-bar-fill.red { background: var(--red); }
+.metric-bar-fill.blue { background: var(--blue); }
+.metric-bar-fill.yellow { background: var(--yellow); }
+
+.metric-sub {
+  font-size: 10px;
+  color: var(--text-muted);
+  margin-top: 6px;
+}
+
+/* === CIRCULAR PROGRESS === */
+.circular-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 8px;
+}
+
+.circular-progress {
+  width: 56px;
+  height: 56px;
+  position: relative;
+}
+
+.circular-progress svg {
+  transform: rotate(-90deg);
+  width: 56px;
+  height: 56px;
+}
+
+.circular-progress .track {
+  fill: none;
+  stroke: var(--border);
+  stroke-width: 3;
+}
+
+.circular-progress .fill-circle {
+  fill: none;
+  stroke-width: 3;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 2s cubic-bezier(0.16,1,0.3,1);
+}
+
+.circular-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: var(--sans);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+/* === TABS === */
+.main-content {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 24px 40px;
+}
+
+.tabs-container {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0;
+  overflow-x: auto;
+}
+
+.tab-btn {
+  padding: 10px 20px;
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-dim);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  position: relative;
+  transition: color 0.2s;
+  white-space: nowrap;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.tab-btn:hover { color: var(--text); }
+
+.tab-btn.active {
+  color: var(--green);
+}
+
+.tab-btn::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--green);
+  transform: scaleX(0);
+  transition: transform 0.3s cubic-bezier(0.16,1,0.3,1);
+}
+
+.tab-btn.active::after {
+  transform: scaleX(1);
+}
+
+.tab-count {
+  background: var(--border);
+  color: var(--text-dim);
+  font-size: 10px;
+  padding: 1px 6px;
+  border-radius: 8px;
+  margin-left: 6px;
+}
+
+.tab-btn.active .tab-count {
+  background: var(--green-glow);
+  color: var(--green);
+}
+
+/* === VIEW PANELS === */
+.view-panel {
+  display: none;
+  animation: fadeSlideIn 0.35s cubic-bezier(0.16,1,0.3,1);
+}
+
+.view-panel.active { display: block; }
+
+@keyframes fadeSlideIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* === LAYER CARDS === */
+.layer-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  margin-bottom: 8px;
+  overflow: hidden;
+  transition: border-color 0.3s;
+}
+
+.layer-card:hover { border-color: var(--border-bright); }
+
+.layer-card.expanded { border-color: var(--blue); border-color: var(--border-bright); }
+
+.layer-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.2s;
+}
+
+.layer-head:hover { background: var(--bg-card-hover); }
+
+.layer-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.layer-idx {
+  font-family: var(--sans);
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--bg-deep);
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.layer-idx.l1 { background: var(--blue); }
+.layer-idx.l2 { background: var(--green); }
+.layer-idx.l3 { background: var(--purple); }
+.layer-idx.l4 { background: var(--yellow); }
+.layer-idx.l5 { background: var(--red); }
+
+.layer-label {
+  font-family: var(--sans);
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--heading);
+}
+
+.layer-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.badge {
+  font-size: 10px;
+  padding: 3px 10px;
+  border-radius: 3px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.badge-active { background: rgba(0,230,118,0.1); color: var(--green); border: 1px solid rgba(0,230,118,0.2); }
+.badge-code { background: var(--blue-dim); color: var(--blue); border: 1px solid rgba(64,196,255,0.2); }
+.badge-partial { background: var(--yellow-dim); color: var(--yellow); border: 1px solid rgba(255,215,64,0.2); }
+.badge-missing { background: var(--red-dim); color: var(--red); border: 1px solid rgba(255,82,82,0.2); }
+
+.layer-chevron {
+  color: var(--text-muted);
+  font-size: 14px;
+  transition: transform 0.3s cubic-bezier(0.16,1,0.3,1);
+}
+
+.layer-card.expanded .layer-chevron {
+  transform: rotate(90deg);
+  color: var(--text-dim);
+}
+
+.layer-body {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.4s cubic-bezier(0.16,1,0.3,1), padding 0.3s;
+  padding: 0 18px;
+}
+
+.layer-card.expanded .layer-body {
+  max-height: 2000px;
+  padding: 0 18px 16px;
+}
+
+.layer-desc {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+  padding: 8px 12px;
+  background: rgba(0,0,0,0.2);
+  border-radius: 4px;
+  border-left: 2px solid var(--border-bright);
+}
+
+/* === COMPONENT GRID === */
+.comp-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 8px;
+}
+
+.comp-item {
+  background: var(--bg-deep);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 12px 14px;
+  position: relative;
+  transition: all 0.2s;
+  overflow: hidden;
+}
+
+.comp-item:hover {
+  border-color: var(--border-bright);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+
+.comp-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 3px;
+  height: 100%;
+}
+
+.comp-item.s-active::before { background: var(--green); }
+.comp-item.s-code::before { background: var(--blue); }
+.comp-item.s-missing::before { background: var(--red); opacity: 0.5; }
+.comp-item.s-review::before { background: var(--yellow); }
+
+.comp-dot {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+
+.comp-dot.green { background: var(--green); box-shadow: 0 0 6px rgba(0,230,118,0.4); }
+.comp-dot.blue { background: var(--blue); }
+.comp-dot.red { background: var(--red); opacity: 0.6; }
+.comp-dot.yellow { background: var(--yellow); }
+
+.comp-name {
+  font-family: var(--sans);
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--heading);
+  margin-bottom: 3px;
+  padding-right: 20px;
+}
+
+.comp-file {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+
+.comp-desc {
+  font-size: 11px;
+  color: var(--text-dim);
+  line-height: 1.5;
+}
+
+/* === PIPELINE FLOW (SVG-based) === */
+.pipeline-section {
+  margin-bottom: 32px;
+}
+
+.pipeline-title {
+  font-family: var(--sans);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+.pipeline-flow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  flex-wrap: wrap;
+  padding: 20px 0;
+}
+
+.pipe-node {
+  background: var(--bg-card);
+  border: 1.5px solid var(--border);
+  border-radius: 6px;
+  padding: 14px 20px;
+  text-align: center;
+  min-width: 130px;
+  position: relative;
+  transition: all 0.3s;
+  cursor: default;
+}
+
+.pipe-node:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+}
+
+.pipe-node.n-active {
+  border-color: var(--green);
+  box-shadow: 0 0 16px rgba(0,230,118,0.08);
+}
+.pipe-node.n-code { border-color: var(--blue); border-style: dashed; }
+.pipe-node.n-missing { border-color: var(--red); border-style: dotted; opacity: 0.7; }
+.pipe-node.n-partial { border-color: var(--yellow); }
+
+.pipe-node-name {
+  font-family: var(--sans);
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--heading);
+  margin-bottom: 2px;
+}
+
+.pipe-node-sub {
+  font-size: 10px;
+  color: var(--text-muted);
+}
+
+.pipe-node-time {
+  font-size: 9px;
+  color: var(--text-muted);
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px solid var(--border);
+}
+
+.pipe-node-status {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 2px solid var(--bg-deep);
+}
+
+.pipe-arrow {
+  display: flex;
+  align-items: center;
+  padding: 0 4px;
+  color: var(--text-muted);
+  position: relative;
+}
+
+.pipe-arrow svg {
+  width: 36px;
+  height: 12px;
+}
+
+.pipe-arrow .arrow-line {
+  stroke: var(--border-bright);
+  stroke-width: 1.5;
+  fill: none;
+}
+
+.pipe-arrow .arrow-head {
+  fill: var(--border-bright);
+}
+
+.pipe-arrow .arrow-pulse {
+  fill: var(--green);
+  opacity: 0;
+  animation: arrowPulse 2.5s ease-in-out infinite;
+}
+
+@keyframes arrowPulse {
+  0% { opacity: 0; transform: translateX(-12px); }
+  40% { opacity: 0.8; }
+  80% { opacity: 0; transform: translateX(12px); }
+  100% { opacity: 0; }
+}
+
+/* === MAPPING TABLE === */
+.mapping-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+
+.map-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.map-table thead th {
+  background: var(--bg-card);
+  padding: 12px 16px;
+  text-align: left;
+  color: var(--text-muted);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-size: 10px;
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+}
+
+.map-table tbody td {
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+  vertical-align: top;
+}
+
+.map-table tbody tr {
+  transition: background 0.15s;
+}
+
+.map-table tbody tr:hover td {
+  background: rgba(64,196,255,0.03);
+}
+
+.map-table tbody tr:last-child td { border-bottom: none; }
+
+.tag {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 3px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.tag-active { background: rgba(0,230,118,0.1); color: var(--green); }
+.tag-code { background: var(--blue-dim); color: var(--blue); }
+.tag-missing { background: var(--red-dim); color: var(--red); }
+.tag-review { background: var(--yellow-dim); color: var(--yellow); }
+
+/* === PRIORITY LIST === */
+.priority-item {
+  display: flex;
+  gap: 14px;
+  padding: 16px 18px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  margin-bottom: 8px;
+  transition: all 0.2s;
+}
+
+.priority-item:hover {
+  border-color: var(--border-bright);
+  transform: translateX(4px);
+}
+
+.pri-rank {
+  font-family: var(--sans);
+  font-weight: 700;
+  font-size: 18px;
+  min-width: 28px;
+  text-align: center;
+  line-height: 1;
+  padding-top: 2px;
+}
+
+.pri-body { flex: 1; }
+
+.pri-title {
+  font-family: var(--sans);
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--heading);
+  margin-bottom: 4px;
+}
+
+.pri-impact {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+
+.pri-desc {
+  font-size: 12px;
+  color: var(--text-dim);
+  line-height: 1.6;
+}
+
+/* === EXPERIMENT TABLE === */
+.exp-table-wrap {
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.exp-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.exp-table thead th {
+  background: var(--bg-card);
+  padding: 10px 14px;
+  text-align: left;
+  font-size: 10px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+  border-bottom: 1px solid var(--border);
+}
+
+.exp-table tbody td {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+}
+
+.exp-table tbody tr {
+  transition: background 0.15s;
+}
+
+.exp-table tbody tr:hover td {
+  background: rgba(64,196,255,0.03);
+}
+
+.exp-table tbody tr:last-child td { border-bottom: none; }
+
+.grade {
+  font-weight: 700;
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 3px;
+  display: inline-block;
+}
+
+.grade-a { background: rgba(0,230,118,0.12); color: var(--green); }
+.grade-b { background: var(--blue-dim); color: var(--blue); }
+.grade-c { background: var(--yellow-dim); color: var(--yellow); }
+.grade-d { background: var(--red-dim); color: var(--red); }
+
+/* Sparkline */
+.sparkline {
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.sparkline svg {
+  width: 60px;
+  height: 20px;
+}
+
+/* === INFO BOX === */
+.info-box {
+  padding: 16px 18px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  border-left: 3px solid var(--blue);
+  margin-top: 16px;
+}
+
+.info-box h4 {
+  font-family: var(--sans);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--heading);
+  margin-bottom: 6px;
+}
+
+.info-box p {
+  font-size: 12px;
+  color: var(--text-dim);
+  line-height: 1.7;
+}
+
+/* === COVERAGE BAR === */
+.coverage-section {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 24px 20px;
+}
+
+.coverage-bar-wrap {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 14px 18px;
+}
+
+.coverage-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+  font-weight: 600;
+}
+
+.coverage-track {
+  flex: 1;
+  height: 6px;
+  background: var(--border);
+  border-radius: 3px;
+  overflow: hidden;
+  display: flex;
+}
+
+.cov-seg {
+  height: 100%;
+  transition: width 1.5s cubic-bezier(0.16,1,0.3,1);
+}
+
+.cov-seg.active { background: var(--green); }
+.cov-seg.code { background: var(--blue); }
+.cov-seg.missing { background: var(--red); opacity: 0.5; }
+
+.coverage-stats {
+  display: flex;
+  gap: 16px;
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.cov-stat {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--text-dim);
+}
+
+.cov-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+/* === LEGEND === */
+.legend-bar {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 24px 12px;
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+/* === FOOTER === */
+.footer {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 20px 24px;
+  text-align: center;
+  font-size: 10px;
+  color: var(--text-muted);
+  border-top: 1px solid var(--border);
+}
+
+/* === SECTION DIVIDER === */
+.section-sep {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 24px 16px;
+}
+
+.sep-line {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--border-bright), transparent);
+}
+
+/* === RESPONSIVE === */
+@media (max-width: 900px) {
+  .metrics-grid { grid-template-columns: repeat(3, 1fr); }
+  .status-bar { grid-template-columns: repeat(2, 1fr); }
+  .pipeline-flow { flex-direction: column; align-items: center; }
+  .pipe-arrow { transform: rotate(90deg); }
+}
+
+@media (max-width: 600px) {
+  body { font-size: 12px; }
+  .header { padding: 12px 16px 0; }
+  .sys-status, .metrics-section, .coverage-section, .main-content, .legend-bar { padding-left: 16px; padding-right: 16px; }
+  .metrics-grid { grid-template-columns: repeat(2, 1fr); }
+  .status-bar { grid-template-columns: 1fr; }
+  .comp-grid { grid-template-columns: 1fr; }
+  .header-top { flex-direction: column; gap: 8px; align-items: flex-start; }
+  .header-meta { flex-wrap: wrap; }
+  .coverage-bar-wrap { flex-direction: column; align-items: flex-start; }
+  .coverage-stats { flex-wrap: wrap; }
+  .tabs-container { gap: 0; }
+  .tab-btn { padding: 8px 12px; font-size: 11px; }
+  .metric-value { font-size: 22px; }
+  .map-table { font-size: 11px; }
+  .map-table thead th, .map-table tbody td { padding: 8px 10px; }
+}
+
+/* === ANIMATIONS === */
+.animate-in {
+  opacity: 0;
+  transform: translateY(12px);
+  animation: slideUp 0.5s cubic-bezier(0.16,1,0.3,1) forwards;
+}
+
+@keyframes slideUp {
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Staggered delays */
+.d1 { animation-delay: 0.05s; }
+.d2 { animation-delay: 0.1s; }
+.d3 { animation-delay: 0.15s; }
+.d4 { animation-delay: 0.2s; }
+.d5 { animation-delay: 0.25s; }
+.d6 { animation-delay: 0.3s; }
+.d7 { animation-delay: 0.35s; }
+.d8 { animation-delay: 0.4s; }
+
+/* Glow effect for key numbers */
+.glow-green { text-shadow: 0 0 20px rgba(0,230,118,0.3); }
+.glow-blue { text-shadow: 0 0 20px rgba(64,196,255,0.3); }
 </style>
 </head>
 <body>
 
-<h1>Quant Trading System</h1>
-<p class="subtitle">5-Layer Quantitative Trading Architecture | Updated 2026-03-29</p>
-
-<!-- Legend -->
-<div class="legend">
-  <div class="legend-item"><div class="legend-dot dot-active"></div> Active (in use)</div>
-  <div class="legend-item"><div class="legend-dot dot-code"></div> Code exists (not used)</div>
-  <div class="legend-item"><div class="legend-dot dot-review"></div> Needs review</div>
-  <div class="legend-item"><div class="legend-dot dot-missing"></div> Not built</div>
-</div>
-
-<!-- Stats -->
-<div class="stats">
-  <div class="stat-card">
-    <div class="stat-num" style="color:var(--green)">6</div>
-    <div class="stat-label">Active Components</div>
-  </div>
-  <div class="stat-card">
-    <div class="stat-num" style="color:var(--blue)">14</div>
-    <div class="stat-label">Code Exists (unused)</div>
-  </div>
-  <div class="stat-card">
-    <div class="stat-num" style="color:var(--red)">10</div>
-    <div class="stat-label">Not Built</div>
-  </div>
-  <div class="stat-card">
-    <div class="stat-num" style="color:var(--purple)">364+</div>
-    <div class="stat-label">Experiments Run</div>
+<!-- HEADER -->
+<div class="header animate-in d1">
+  <div class="header-top">
+    <div class="logo">
+      <div class="logo-mark">QT</div>
+      <div class="logo-text">Quant Trading System <span>v8.14 // 5-Layer Architecture</span></div>
+    </div>
+    <div class="header-meta">
+      <span><span class="pulse"></span>System Active</span>
+      <span>Updated 2026-03-29 09:30 AEDT</span>
+    </div>
   </div>
 </div>
 
-<!-- Coverage bar -->
-<div style="max-width:600px;margin:0 auto 24px;">
-  <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text-dim);margin-bottom:4px;">
-    <span>System Coverage vs Reference</span>
-    <span>30 components total</span>
-  </div>
-  <div class="gap-bar">
-    <div class="gap-segment gap-active" style="width:20%">20%</div>
-    <div class="gap-segment gap-code" style="width:47%">47%</div>
-    <div class="gap-segment gap-missing" style="width:33%">33%</div>
-  </div>
-  <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-dim);margin-top:4px;">
-    <span>6 active</span>
-    <span>14 code only</span>
-    <span>10 missing</span>
-  </div>
-</div>
-
-<!-- Tabs -->
-<div class="tabs">
-  <div class="tab active" onclick="switchTab('arch')">Architecture</div>
-  <div class="tab" onclick="switchTab('flow')">Data Flow</div>
-  <div class="tab" onclick="switchTab('mapping')">Mapping Table</div>
-  <div class="tab" onclick="switchTab('priority')">Priority</div>
-</div>
-
-<div class="arch-container">
-
-<!-- Architecture View -->
-<div id="view-arch" class="view active">
-
-  <!-- Layer 1 -->
-  <div class="layer open" onclick="toggleLayer(this)">
-    <div class="layer-header">
-      <div class="layer-title">
-        <div class="layer-num">1</div>
-        <span class="layer-name">Data Platform + Feature Engineering</span>
-      </div>
-      <div style="display:flex;align-items:center;gap:8px;">
-        <span class="layer-badge badge-code">Code Only</span>
-        <span class="layer-arrow">&#9654;</span>
+<!-- SYSTEM STATUS -->
+<div class="sys-status animate-in d2">
+  <div class="status-bar">
+    <div class="status-cell">
+      <div class="status-indicator green"></div>
+      <div class="status-info">
+        <div class="status-label">Last Backtest</div>
+        <div class="status-value">2026-03-29 08:15</div>
       </div>
     </div>
-    <div class="layer-body">
-      <p style="font-size:13px;color:var(--text-dim);margin-bottom:8px;">
-        Reference: PostgreSQL 18 + DuckDB + Parquet Cache + BigQuery | 78+41=119 dim features
-      </p>
-      <div class="comp-grid">
-        <div class="comp">
-          <div class="comp-status dot-code"></div>
-          <div class="comp-name">DuckDB Warehouse</div>
-          <div class="comp-file">megatrade/data/warehouse.py</div>
-          <div class="comp-desc">7 data sources, DuckDB storage. Code exists, not connected to trading.</div>
-        </div>
-        <div class="comp">
-          <div class="comp-status dot-code"></div>
-          <div class="comp-name">171-dim Features</div>
-          <div class="comp-file">megatrade/features/*.py</div>
-          <div class="comp-desc">TECH(41) + VOL(15) + ALPHA(14) + GEO(20) + SENT(5) + EXT(8) + PHYS(8) + FACTORS(60)</div>
-        </div>
-        <div class="comp">
-          <div class="comp-status dot-active"></div>
-          <div class="comp-name">AutoResearch Features</div>
-          <div class="comp-file">autoresearch/strategy.py</div>
-          <div class="comp-desc">Actually used: momentum factors, OBV, RSI, etc. in strategy.py backtest.</div>
-        </div>
-        <div class="comp">
-          <div class="comp-status dot-missing"></div>
-          <div class="comp-name">PostgreSQL Main Store</div>
-          <div class="comp-file">-</div>
-          <div class="comp-desc">Reference uses PG18 as primary. We only have DuckDB (megatrade) and yfinance direct.</div>
-        </div>
+    <div class="status-cell">
+      <div class="status-indicator green"></div>
+      <div class="status-info">
+        <div class="status-label">Last Trade</div>
+        <div class="status-value">2026-03-28 16:00 ET</div>
       </div>
     </div>
-  </div>
-
-  <!-- Layer 2 -->
-  <div class="layer" onclick="toggleLayer(this)">
-    <div class="layer-header">
-      <div class="layer-title">
-        <div class="layer-num">2</div>
-        <span class="layer-name">Candidate + Research Gate</span>
-      </div>
-      <div style="display:flex;align-items:center;gap:8px;">
-        <span class="layer-badge badge-active">Partially Active</span>
-        <span class="layer-arrow">&#9654;</span>
+    <div class="status-cell">
+      <div class="status-indicator green"></div>
+      <div class="status-info">
+        <div class="status-label">HALT Status</div>
+        <div class="status-value" style="color:var(--green)">CLEAR</div>
       </div>
     </div>
-    <div class="layer-body">
-      <p style="font-size:13px;color:var(--text-dim);margin-bottom:8px;">
-        Reference: 5-layer gate (base→cost_x2→robust→stress→ml_oos) + vectorbt prescan + ML subsystem
-      </p>
-      <div class="comp-grid">
-        <div class="comp">
-          <div class="comp-status dot-active"></div>
-          <div class="comp-name">AutoResearch v5</div>
-          <div class="comp-file">autoresearch/run_v5.py</div>
-          <div class="comp-desc">Our main research tool. Learnings memory, independent evaluator, auto-proposal. 364+ experiments.</div>
-        </div>
-        <div class="comp">
-          <div class="comp-status dot-active"></div>
-          <div class="comp-name">IS/OOS Walk-Forward</div>
-          <div class="comp-file">autoresearch/strategy.py</div>
-          <div class="comp-desc">4-fold WF (2016-2023) + OOS holdout (2024-2026). Base validation.</div>
-        </div>
-        <div class="comp">
-          <div class="comp-status dot-active"></div>
-          <div class="comp-name">Knowledge System</div>
-          <div class="comp-file">knowledge/</div>
-          <div class="comp-desc">Rules/hypotheses/knowledge per domain. Hypothesis confirmed 5+ times upgrades to rule.</div>
-        </div>
-        <div class="comp">
-          <div class="comp-status dot-code"></div>
-          <div class="comp-name">5-Layer Research Gate</div>
-          <div class="comp-file">megatrade/research/gate.py</div>
-          <div class="comp-desc">base→cost_x2→robust→stress→ml_oos. Code exists, not connected to autoresearch.</div>
-        </div>
-        <div class="comp">
-          <div class="comp-status dot-code"></div>
-          <div class="comp-name">LightGBM Signal Model</div>
-          <div class="comp-file">megatrade/models/lightgbm_signal.py</div>
-          <div class="comp-desc">Rolling Walk-Forward CV, lr=0.02, 500 trees. Code exists.</div>
-        </div>
-        <div class="comp">
-          <div class="comp-status dot-code"></div>
-          <div class="comp-name">MetaLabeling</div>
-          <div class="comp-file">megatrade/models/meta_labeling.py</div>
-          <div class="comp-desc">Dual filter (intent cost + 26-dim features). Code exists.</div>
-        </div>
-        <div class="comp">
-          <div class="comp-status dot-code"></div>
-          <div class="comp-name">Alpha Generator</div>
-          <div class="comp-file">megatrade/alpha/generator.py</div>
-          <div class="comp-desc">10-template alpha generation with AST depth constraints. Code exists.</div>
-        </div>
-        <div class="comp">
-          <div class="comp-status dot-code"></div>
-          <div class="comp-name">Stress Test</div>
-          <div class="comp-file">megatrade/research/stress_plan.py</div>
-          <div class="comp-desc">5 stress scenarios. Code exists.</div>
-        </div>
-        <div class="comp">
-          <div class="comp-status dot-missing"></div>
-          <div class="comp-name">vectorbt Pre-scan</div>
-          <div class="comp-file">-</div>
-          <div class="comp-desc">Reference uses vectorbt for fast signal pre-screening before full backtest.</div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Layer 3 -->
-  <div class="layer" onclick="toggleLayer(this)">
-    <div class="layer-header">
-      <div class="layer-title">
-        <div class="layer-num">3</div>
-        <span class="layer-name">Deploy Gate</span>
-      </div>
-      <div style="display:flex;align-items:center;gap:8px;">
-        <span class="layer-badge badge-code">Code Only</span>
-        <span class="layer-arrow">&#9654;</span>
-      </div>
-    </div>
-    <div class="layer-body">
-      <p style="font-size:13px;color:var(--text-dim);margin-bottom:8px;">
-        Reference: Account profiling + root cause analysis + lifecycle promotion (BACKTESTED→RESEARCH_PASSED→DEPLOYABLE)
-      </p>
-      <div class="comp-grid">
-        <div class="comp">
-          <div class="comp-status dot-code"></div>
-          <div class="comp-name">Deploy Gate</div>
-          <div class="comp-file">megatrade/deploy/deploy_gate.py</div>
-          <div class="comp-desc">5 validation checks before auto_trader update. Code exists, not connected.</div>
-        </div>
-        <div class="comp">
-          <div class="comp-status dot-code"></div>
-          <div class="comp-name">Account Profile</div>
-          <div class="comp-file">megatrade/research/account_profile.py</div>
-          <div class="comp-desc">Account sizing + position allocation. Code exists.</div>
-        </div>
-        <div class="comp">
-          <div class="comp-status dot-missing"></div>
-          <div class="comp-name">Lifecycle State Machine</div>
-          <div class="comp-file">-</div>
-          <div class="comp-desc">VALIDATED→PAPER_LIVE→LIMITED_CAPITAL→ACTIVE. Not built.</div>
-        </div>
-        <div class="comp">
-          <div class="comp-status dot-missing"></div>
-          <div class="comp-name">Root Cause Analysis</div>
-          <div class="comp-file">-</div>
-          <div class="comp-desc">dispatch_root_cause_codes for deployment failures. Not built.</div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Layer 4 -->
-  <div class="layer" onclick="toggleLayer(this)">
-    <div class="layer-header">
-      <div class="layer-title">
-        <div class="layer-num">4</div>
-        <span class="layer-name">Runtime Gate + Execution</span>
-      </div>
-      <div style="display:flex;align-items:center;gap:8px;">
-        <span class="layer-badge badge-partial">Needs Review</span>
-        <span class="layer-arrow">&#9654;</span>
-      </div>
-    </div>
-    <div class="layer-body">
-      <p style="font-size:13px;color:var(--text-dim);margin-bottom:8px;">
-        Reference: Microstructure analysis + 4-dim position scaling + 8 reject codes + IBKR execution + position reconciliation
-      </p>
-      <div class="comp-grid">
-        <div class="comp">
-          <div class="comp-status dot-active"></div>
-          <div class="comp-name">auto_trader.py v8.14</div>
-          <div class="comp-file">auto_trader.py</div>
-          <div class="comp-desc">Triple Signal + Enhanced Hedge. Alpaca paper trading. Our main execution engine.</div>
-        </div>
-        <div class="comp">
-          <div class="comp-status dot-review"></div>
-          <div class="comp-name">Runtime Gate (HALT)</div>
-          <div class="comp-file">auto_trader.py (embedded)</div>
-          <div class="comp-desc">4 HALT conditions: 5-day loss, 15% DD, Sharpe &lt;-0.5, 5% single-day loss. Needs review.</div>
-        </div>
-        <div class="comp">
-          <div class="comp-status dot-active"></div>
-          <div class="comp-name">Alpaca Client</div>
-          <div class="comp-file">alpaca_client.py</div>
-          <div class="comp-desc">REST API execution + portfolio history. Active.</div>
-        </div>
-        <div class="comp">
-          <div class="comp-status dot-code"></div>
-          <div class="comp-name">IBKR Executor</div>
-          <div class="comp-file">megatrade/deploy/executor.py</div>
-          <div class="comp-desc">IBKRExecutor + PaperExecutor + TWAP. Code exists.</div>
-        </div>
-        <div class="comp">
-          <div class="comp-status dot-code"></div>
-          <div class="comp-name">Risk Manager</div>
-          <div class="comp-file">megatrade/deploy/risk_manager.py</div>
-          <div class="comp-desc">Pre-trade risk checks + kill switch. Code exists.</div>
-        </div>
-        <div class="comp">
-          <div class="comp-status dot-missing"></div>
-          <div class="comp-name">Microstructure</div>
-          <div class="comp-file">-</div>
-          <div class="comp-desc">Kyle lambda, Glosten-Milgrom Roll, POV analysis. Not built.</div>
-        </div>
-        <div class="comp">
-          <div class="comp-status dot-missing"></div>
-          <div class="comp-name">Position Reconciler</div>
-          <div class="comp-file">-</div>
-          <div class="comp-desc">Local tracker vs broker drift detection. Not built.</div>
-        </div>
-        <div class="comp">
-          <div class="comp-status dot-missing"></div>
-          <div class="comp-name">Capacity-Aware Sizing</div>
-          <div class="comp-file">-</div>
-          <div class="comp-desc">Kelly + Beta + Vol + Geo risk 4-dim sizing. Not built.</div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Layer 5 -->
-  <div class="layer" onclick="toggleLayer(this)">
-    <div class="layer-header">
-      <div class="layer-title">
-        <div class="layer-num">5</div>
-        <span class="layer-name">Monitoring + Scheduling + Event Risk</span>
-      </div>
-      <div style="display:flex;align-items:center;gap:8px;">
-        <span class="layer-badge badge-missing">Mostly Missing</span>
-        <span class="layer-arrow">&#9654;</span>
-      </div>
-    </div>
-    <div class="layer-body">
-      <p style="font-size:13px;color:var(--text-dim);margin-bottom:8px;">
-        Reference: 4-level health degradation + EOD scheduler + event-driven hedging + decision audit + Dash dashboard
-      </p>
-      <div class="comp-grid">
-        <div class="comp">
-          <div class="comp-status dot-active"></div>
-          <div class="comp-name">Cron Scheduling</div>
-          <div class="comp-file">crontab</div>
-          <div class="comp-desc">Basic cron for daily trading. No health checks or watchdog.</div>
-        </div>
-        <div class="comp">
-          <div class="comp-status dot-code"></div>
-          <div class="comp-name">Dashboard</div>
-          <div class="comp-file">megatrade/deploy/dashboard.py</div>
-          <div class="comp-desc">Terminal dashboard + JSON export. Code exists.</div>
-        </div>
-        <div class="comp">
-          <div class="comp-status dot-code"></div>
-          <div class="comp-name">Scheduler</div>
-          <div class="comp-file">megatrade/deploy/scheduler.py</div>
-          <div class="comp-desc">Daily/intraday scheduling. Code exists.</div>
-        </div>
-        <div class="comp">
-          <div class="comp-status dot-code"></div>
-          <div class="comp-name">Online Updater</div>
-          <div class="comp-file">megatrade/deploy/online_updater.py</div>
-          <div class="comp-desc">Alpha-decay blending + drift detection. Code exists.</div>
-        </div>
-        <div class="comp">
-          <div class="comp-status dot-missing"></div>
-          <div class="comp-name">Event-Driven Risk</div>
-          <div class="comp-file">-</div>
-          <div class="comp-desc">VIX spike / geopolitical triggers + auto hedging. Not built.</div>
-        </div>
-        <div class="comp">
-          <div class="comp-status dot-missing"></div>
-          <div class="comp-name">Health Check (4-level)</div>
-          <div class="comp-file">-</div>
-          <div class="comp-desc">Normal→Warning→Degraded→Shutdown degradation chain. Not built.</div>
-        </div>
-        <div class="comp">
-          <div class="comp-status dot-missing"></div>
-          <div class="comp-name">Decision Audit</div>
-          <div class="comp-file">-</div>
-          <div class="comp-desc">Why did the system make this trade? Audit trail. Not built.</div>
-        </div>
-        <div class="comp">
-          <div class="comp-status dot-missing"></div>
-          <div class="comp-name">MLflow Tracking</div>
-          <div class="comp-file">-</div>
-          <div class="comp-desc">We use TSV files. Reference uses MLflow for 250-symbol experiment tracking.</div>
-        </div>
+    <div class="status-cell">
+      <div class="status-indicator yellow"></div>
+      <div class="status-info">
+        <div class="status-label">System Health</div>
+        <div class="status-value" style="color:var(--yellow)">NOMINAL (no watchdog)</div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- Data Flow View -->
-<div id="view-flow" class="view">
-  <h3 style="text-align:center;margin-bottom:16px;color:var(--text-dim);">Current Actual Data Flow</h3>
-  <div class="flow">
-    <div class="flow-node fn-active">
-      <div class="flow-node-title">yfinance</div>
-      <div class="flow-node-sub">OHLCV data</div>
+<!-- PERFORMANCE METRICS -->
+<div class="metrics-section animate-in d3">
+  <div class="metrics-grid">
+    <div class="metric-card">
+      <div class="metric-label">OOS Sharpe</div>
+      <div class="metric-value green glow-green" data-count="2.09" data-decimals="2">0</div>
+      <div class="metric-bar"><div class="metric-bar-fill green" data-width="84"></div></div>
+      <div class="metric-sub">Target: 2.50</div>
     </div>
-    <div class="flow-arrow">&#8594;</div>
-    <div class="flow-node fn-active">
-      <div class="flow-node-title">strategy.py</div>
-      <div class="flow-node-sub">Backtest engine</div>
+    <div class="metric-card">
+      <div class="metric-label">CAGR</div>
+      <div class="metric-value green glow-green" data-count="25.0" data-decimals="1" data-suffix="%">0</div>
+      <div class="metric-bar"><div class="metric-bar-fill green" data-width="72"></div></div>
+      <div class="metric-sub">Annualized return</div>
     </div>
-    <div class="flow-arrow">&#8594;</div>
-    <div class="flow-node fn-active">
-      <div class="flow-node-title">run_v5.py</div>
-      <div class="flow-node-sub">AutoResearch harness</div>
+    <div class="metric-card">
+      <div class="metric-label">Max Drawdown</div>
+      <div class="metric-value red" data-count="-6.3" data-decimals="1" data-suffix="%">0</div>
+      <div class="metric-bar"><div class="metric-bar-fill red" data-width="25"></div></div>
+      <div class="metric-sub">Peak-to-trough</div>
     </div>
-    <div class="flow-arrow">&#8594;</div>
-    <div class="flow-node fn-missing" title="Manual copy-paste">
-      <div class="flow-node-title" style="color:var(--red);">Manual</div>
-      <div class="flow-node-sub">Copy best config</div>
+    <div class="metric-card">
+      <div class="metric-label">Calmar</div>
+      <div class="metric-value blue glow-blue" data-count="3.97" data-decimals="2">0</div>
+      <div class="metric-bar"><div class="metric-bar-fill blue" data-width="79"></div></div>
+      <div class="metric-sub">CAGR / Max DD</div>
     </div>
-    <div class="flow-arrow">&#8594;</div>
-    <div class="flow-node fn-active">
-      <div class="flow-node-title">auto_trader.py</div>
-      <div class="flow-node-sub">v8.14 Alpaca</div>
+    <div class="metric-card">
+      <div class="metric-label">Sortino</div>
+      <div class="metric-value blue" data-count="2.80" data-decimals="2">0</div>
+      <div class="metric-bar"><div class="metric-bar-fill blue" data-width="70"></div></div>
+      <div class="metric-sub">Downside-adjusted</div>
     </div>
-  </div>
-
-  <h3 style="text-align:center;margin:32px 0 16px;color:var(--text-dim);">Target Flow (Reference-style)</h3>
-  <div class="flow">
-    <div class="flow-node fn-active">
-      <div class="flow-node-title">7 Data Sources</div>
-      <div class="flow-node-sub">yfinance + AV + GDELT + FRED + ...</div>
+    <div class="metric-card">
+      <div class="metric-label">Experiments</div>
+      <div class="metric-value yellow" data-count="364" data-decimals="0" data-suffix="+">0</div>
+      <div class="metric-bar"><div class="metric-bar-fill yellow" data-width="90"></div></div>
+      <div class="metric-sub">AutoResearch v5</div>
     </div>
-    <div class="flow-arrow">&#8594;</div>
-    <div class="flow-node fn-code">
-      <div class="flow-node-title">171-dim Features</div>
-      <div class="flow-node-sub">pipeline.py</div>
-    </div>
-    <div class="flow-arrow">&#8594;</div>
-    <div class="flow-node fn-code">
-      <div class="flow-node-title">Research Gate</div>
-      <div class="flow-node-sub">5-layer validation</div>
-    </div>
-    <div class="flow-arrow">&#8594;</div>
-    <div class="flow-node fn-code">
-      <div class="flow-node-title">Deploy Gate</div>
-      <div class="flow-node-sub">5 checks → promote</div>
-    </div>
-    <div class="flow-arrow">&#8594;</div>
-    <div class="flow-node fn-partial">
-      <div class="flow-node-title">Runtime Gate</div>
-      <div class="flow-node-sub">HALT + risk control</div>
-    </div>
-    <div class="flow-arrow">&#8594;</div>
-    <div class="flow-node fn-active">
-      <div class="flow-node-title">Executor</div>
-      <div class="flow-node-sub">Alpaca / IBKR</div>
-    </div>
-    <div class="flow-arrow">&#8594;</div>
-    <div class="flow-node fn-missing">
-      <div class="flow-node-title">Monitor</div>
-      <div class="flow-node-sub">Health + audit</div>
-    </div>
-  </div>
-
-  <div style="margin-top:24px;padding:16px;background:var(--card);border:1px solid var(--border);border-radius:8px;">
-    <h4 style="margin-bottom:8px;">Key Gap: The "Manual" Step</h4>
-    <p style="font-size:13px;color:var(--text-dim);line-height:1.6;">
-      Right now, the biggest bottleneck is the manual step between AutoResearch and auto_trader.
-      When autoresearch finds a better config (e.g., OOS Sharpe 2.03), someone must manually
-      extract the parameters and update auto_trader.py. Reference has a Deploy Gate that automates
-      this: if a strategy passes all 5 research gates, it automatically promotes to paper trading.
-    </p>
   </div>
 </div>
 
-<!-- Mapping View -->
-<div id="view-mapping" class="view">
-  <table class="mapping-table">
-    <thead>
-      <tr>
-        <th>Reference Component</th>
-        <th>Our Implementation</th>
-        <th>Status</th>
-        <th>Gap</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td>PostgreSQL 18 + BigQuery</td>
-        <td>DuckDB (megatrade code) / yfinance direct</td>
-        <td><span class="status-tag tag-code">Code Only</span></td>
-        <td>No persistent DB in production</td>
-      </tr>
-      <tr>
-        <td>78+41 dim features (119)</td>
-        <td>171 dim features (megatrade code)</td>
-        <td><span class="status-tag tag-code">Code Only</span></td>
-        <td>More dims but unused; actual trading uses ~5 factors</td>
-      </tr>
-      <tr>
-        <td>Research Gate 5-layer</td>
-        <td>AutoResearch v5 (IS/OOS WF)</td>
-        <td><span class="status-tag tag-active">Active</span></td>
-        <td>Only base layer; missing cost_x2, robust, stress, ml_oos</td>
-      </tr>
-      <tr>
-        <td>LightGBM + MetaLabeling</td>
-        <td>megatrade/models/ code</td>
-        <td><span class="status-tag tag-code">Code Only</span></td>
-        <td>ML failed in practice (9 rounds, no stable alpha)</td>
-      </tr>
-      <tr>
-        <td>Alpha 3-Agent Cycle</td>
-        <td>megatrade/alpha/ code</td>
-        <td><span class="status-tag tag-code">Code Only</span></td>
-        <td>Template-based, no Idea/Factor/Eval loop</td>
-      </tr>
-      <tr>
-        <td>Deploy Gate (lifecycle)</td>
-        <td>megatrade/deploy/deploy_gate.py</td>
-        <td><span class="status-tag tag-code">Code Only</span></td>
-        <td>5 checks exist, not connected to autoresearch</td>
-      </tr>
-      <tr>
-        <td>Runtime Gate (8 reject codes)</td>
-        <td>HALT flag in auto_trader.py</td>
-        <td><span class="status-tag tag-review">Needs Review</span></td>
-        <td>Basic 4-condition HALT, no reject codes or scaling</td>
-      </tr>
-      <tr>
-        <td>IBKR ib_insync execution</td>
-        <td>Alpaca REST API</td>
-        <td><span class="status-tag tag-active">Active</span></td>
-        <td>Different broker, simpler API, no TWAP</td>
-      </tr>
-      <tr>
-        <td>Microstructure (Kyle/GM)</td>
-        <td>-</td>
-        <td><span class="status-tag tag-missing">Not Built</span></td>
-        <td>No price impact or adverse selection analysis</td>
-      </tr>
-      <tr>
-        <td>Event-driven risk (VIX/geo)</td>
-        <td>-</td>
-        <td><span class="status-tag tag-missing">Not Built</span></td>
-        <td>No automatic hedging on macro events</td>
-      </tr>
-      <tr>
-        <td>Position reconciler</td>
-        <td>-</td>
-        <td><span class="status-tag tag-missing">Not Built</span></td>
-        <td>No local vs broker drift detection</td>
-      </tr>
-      <tr>
-        <td>4-level health degradation</td>
-        <td>-</td>
-        <td><span class="status-tag tag-missing">Not Built</span></td>
-        <td>No Normal→Warning→Degraded→Shutdown chain</td>
-      </tr>
-      <tr>
-        <td>EOD scheduler + watchdog</td>
-        <td>Basic cron</td>
-        <td><span class="status-tag tag-active">Active</span></td>
-        <td>No DB freshness check, no auto-retry</td>
-      </tr>
-      <tr>
-        <td>Decision audit + Dash dashboard</td>
-        <td>-</td>
-        <td><span class="status-tag tag-missing">Not Built</span></td>
-        <td>No audit trail or visual dashboard</td>
-      </tr>
-      <tr>
-        <td>MLflow (250 symbols)</td>
-        <td>TSV files (results_v4.tsv)</td>
-        <td><span class="status-tag tag-active">Active</span></td>
-        <td>Simple but functional, no hyperparameter tracking</td>
-      </tr>
-      <tr>
-        <td>Online learner (River)</td>
-        <td>megatrade/deploy/online_updater.py</td>
-        <td><span class="status-tag tag-code">Code Only</span></td>
-        <td>Alpha-decay blending code exists, not used</td>
-      </tr>
-      <tr>
-        <td>Physical factors (12 files)</td>
-        <td>megatrade/features/physical_factors.py (8 dim)</td>
-        <td><span class="status-tag tag-code">Code Only</span></td>
-        <td>Simplified version vs Reference's 12 physics modules</td>
-      </tr>
-      <tr>
-        <td>Discord bot commands</td>
-        <td>OpenClaw Discord bots</td>
-        <td><span class="status-tag tag-active">Active</span></td>
-        <td>Different architecture (OpenClaw vs native bot)</td>
-      </tr>
-    </tbody>
-  </table>
-</div>
-
-<!-- Priority View -->
-<div id="view-priority" class="view">
-  <h3 style="margin-bottom:4px;">Implementation Roadmap</h3>
-  <p style="font-size:13px;color:var(--text-dim);margin-bottom:16px;">Based on impact/effort analysis. Focus on connecting existing code before building new.</p>
-
-  <ul class="priority-list">
-    <li>
-      <div class="priority-rank" style="color:var(--red)">1</div>
-      <div class="priority-content">
-        <div class="priority-title">Connect Research Gate to AutoResearch</div>
-        <div class="priority-desc">
-          <strong>Impact: HIGH</strong> | MegaTrade gate.py already has 5-layer logic. Wire it so autoresearch results
-          automatically pass through cost_x2 + robust + stress + ml_oos gates. This is the single highest-value integration.
-        </div>
-      </div>
-    </li>
-    <li>
-      <div class="priority-rank" style="color:var(--red)">2</div>
-      <div class="priority-content">
-        <div class="priority-title">Connect Deploy Gate to auto_trader.py</div>
-        <div class="priority-desc">
-          <strong>Impact: HIGH</strong> | deploy_gate.py has 5 validation checks. If a config passes Research Gate + Deploy Gate,
-          auto-update auto_trader.py parameters. Eliminates the "Manual" bottleneck.
-        </div>
-      </div>
-    </li>
-    <li>
-      <div class="priority-rank" style="color:var(--yellow)">3</div>
-      <div class="priority-content">
-        <div class="priority-title">Review & Activate Runtime Gate</div>
-        <div class="priority-desc">
-          <strong>Impact: MEDIUM</strong> | HALT logic was added but also changed trading params (v7.1→v8.14 conflict).
-          Need selective revert, then activate the 4-condition monitoring.
-        </div>
-      </div>
-    </li>
-    <li>
-      <div class="priority-rank" style="color:var(--yellow)">4</div>
-      <div class="priority-content">
-        <div class="priority-title">Event-Driven Risk Control</div>
-        <div class="priority-desc">
-          <strong>Impact: MEDIUM</strong> | Monitor VIX, oil, macro indicators. Auto-suggest hedging when thresholds breach.
-          Reference's 3-button Discord UI (Execute/Pause/Cancel) is a good reference.
-        </div>
-      </div>
-    </li>
-    <li>
-      <div class="priority-rank" style="color:var(--green)">5</div>
-      <div class="priority-content">
-        <div class="priority-title">Live Dashboard</div>
-        <div class="priority-desc">
-          <strong>Impact: LOW-MED</strong> | Real-time view of positions, PnL, system health, recent experiments.
-          MegaTrade dashboard.py exists. Could also build as web dashboard (Dash/Streamlit).
-        </div>
-      </div>
-    </li>
-    <li>
-      <div class="priority-rank" style="color:var(--green)">6</div>
-      <div class="priority-content">
-        <div class="priority-title">Position Reconciliation</div>
-        <div class="priority-desc">
-          <strong>Impact: LOW</strong> | Compare local state vs Alpaca positions. Detect drift. Important for production
-          but less urgent for paper trading phase.
-        </div>
-      </div>
-    </li>
-  </ul>
-
-  <div style="margin-top:24px;padding:16px;background:var(--card);border:1px solid var(--border);border-radius:8px;">
-    <h4 style="margin-bottom:8px;">Core Principle</h4>
-    <p style="font-size:13px;color:var(--text-dim);line-height:1.6;">
-      <strong>Connect before build.</strong> We have 14 components as code that aren't used.
-      The highest ROI is wiring them into the actual pipeline, not building new things.
-      Priority #1 and #2 alone would close the biggest gap between our system and Reference.
-    </p>
+<!-- COVERAGE BAR -->
+<div class="coverage-section animate-in d4">
+  <div class="coverage-bar-wrap">
+    <div class="coverage-label">System Coverage</div>
+    <div class="coverage-track">
+      <div class="cov-seg active" style="width:0" data-width="20"></div>
+      <div class="cov-seg code" style="width:0" data-width="47"></div>
+      <div class="cov-seg missing" style="width:0" data-width="33"></div>
+    </div>
+    <div class="coverage-stats">
+      <div class="cov-stat"><div class="cov-dot" style="background:var(--green)"></div> 6 Active</div>
+      <div class="cov-stat"><div class="cov-dot" style="background:var(--blue)"></div> 14 Code</div>
+      <div class="cov-stat"><div class="cov-dot" style="background:var(--red);opacity:0.5"></div> 10 Missing</div>
+    </div>
   </div>
 </div>
 
-</div><!-- arch-container -->
+<!-- LEGEND -->
+<div class="legend-bar animate-in d4">
+  <div class="legend-item"><div class="legend-dot" style="background:var(--green);box-shadow:0 0 4px rgba(0,230,118,0.4)"></div> Active</div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--blue)"></div> Code Exists</div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--yellow)"></div> Needs Review</div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--red);opacity:0.6"></div> Not Built</div>
+</div>
 
-<div style="text-align:center;margin-top:32px;padding:16px;color:var(--text-dim);font-size:12px;">
-  Quant Trading System Dashboard | Reference: Reference System | Last updated: 2026-03-29
+<!-- DIVIDER -->
+<div class="section-sep"><div class="sep-line"></div></div>
+
+<!-- TABS -->
+<div class="main-content">
+  <div class="tabs-container animate-in d5">
+    <button class="tab-btn active" data-tab="arch">Architecture<span class="tab-count">5</span></button>
+    <button class="tab-btn" data-tab="pipeline">Pipeline<span class="tab-count">5</span></button>
+    <button class="tab-btn" data-tab="experiments">Experiments<span class="tab-count">10</span></button>
+    <button class="tab-btn" data-tab="mapping">Mapping<span class="tab-count">17</span></button>
+    <button class="tab-btn" data-tab="priority">Priority<span class="tab-count">6</span></button>
+  </div>
+
+  <!-- ======= ARCHITECTURE TAB ======= -->
+  <div id="panel-arch" class="view-panel active">
+
+    <!-- Layer 1 -->
+    <div class="layer-card expanded">
+      <div class="layer-head" onclick="toggleLayer(this.parentElement)">
+        <div class="layer-left">
+          <div class="layer-idx l1">1</div>
+          <div class="layer-label">Data Platform + Feature Engineering</div>
+        </div>
+        <div class="layer-right">
+          <span class="badge badge-code">Code Only</span>
+          <span class="layer-chevron">&#9654;</span>
+        </div>
+      </div>
+      <div class="layer-body">
+        <div class="layer-desc">Reference: PostgreSQL 18 + DuckDB + Parquet Cache + BigQuery | 78+41=119 dim features</div>
+        <div class="comp-grid">
+          <div class="comp-item s-code"><div class="comp-dot blue"></div><div class="comp-name">DuckDB Warehouse</div><div class="comp-file">megatrade/data/warehouse.py</div><div class="comp-desc">7 data sources, DuckDB storage. Code exists, not connected to trading.</div></div>
+          <div class="comp-item s-code"><div class="comp-dot blue"></div><div class="comp-name">171-dim Features</div><div class="comp-file">megatrade/features/*.py</div><div class="comp-desc">TECH(41) + VOL(15) + ALPHA(14) + GEO(20) + SENT(5) + EXT(8) + PHYS(8) + FACTORS(60)</div></div>
+          <div class="comp-item s-active"><div class="comp-dot green"></div><div class="comp-name">AutoResearch Features</div><div class="comp-file">autoresearch/strategy.py</div><div class="comp-desc">Actually used: momentum factors, OBV, RSI, etc. in strategy.py backtest.</div></div>
+          <div class="comp-item s-missing"><div class="comp-dot red"></div><div class="comp-name">PostgreSQL Main Store</div><div class="comp-file">-</div><div class="comp-desc">Reference uses PG18 as primary. We only have DuckDB (megatrade) and yfinance direct.</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Layer 2 -->
+    <div class="layer-card">
+      <div class="layer-head" onclick="toggleLayer(this.parentElement)">
+        <div class="layer-left">
+          <div class="layer-idx l2">2</div>
+          <div class="layer-label">Candidate + Research Gate</div>
+        </div>
+        <div class="layer-right">
+          <span class="badge badge-active">Partially Active</span>
+          <span class="layer-chevron">&#9654;</span>
+        </div>
+      </div>
+      <div class="layer-body">
+        <div class="layer-desc">Reference: 5-layer gate (base > cost_x2 > robust > stress > ml_oos) + vectorbt prescan + ML subsystem</div>
+        <div class="comp-grid">
+          <div class="comp-item s-active"><div class="comp-dot green"></div><div class="comp-name">AutoResearch v5</div><div class="comp-file">autoresearch/run_v5.py</div><div class="comp-desc">Main research tool. Learnings memory, independent evaluator, auto-proposal. 364+ experiments.</div></div>
+          <div class="comp-item s-active"><div class="comp-dot green"></div><div class="comp-name">IS/OOS Walk-Forward</div><div class="comp-file">autoresearch/strategy.py</div><div class="comp-desc">4-fold WF (2016-2023) + OOS holdout (2024-2026). Base validation.</div></div>
+          <div class="comp-item s-active"><div class="comp-dot green"></div><div class="comp-name">Knowledge System</div><div class="comp-file">knowledge/</div><div class="comp-desc">Rules/hypotheses/knowledge per domain. Hypothesis confirmed 5+ times upgrades to rule.</div></div>
+          <div class="comp-item s-code"><div class="comp-dot blue"></div><div class="comp-name">5-Layer Research Gate</div><div class="comp-file">megatrade/research/gate.py</div><div class="comp-desc">base > cost_x2 > robust > stress > ml_oos. Code exists, not connected.</div></div>
+          <div class="comp-item s-code"><div class="comp-dot blue"></div><div class="comp-name">LightGBM Signal Model</div><div class="comp-file">megatrade/models/lightgbm_signal.py</div><div class="comp-desc">Rolling Walk-Forward CV, lr=0.02, 500 trees. Code exists.</div></div>
+          <div class="comp-item s-code"><div class="comp-dot blue"></div><div class="comp-name">MetaLabeling</div><div class="comp-file">megatrade/models/meta_labeling.py</div><div class="comp-desc">Dual filter (intent cost + 26-dim features). Code exists.</div></div>
+          <div class="comp-item s-code"><div class="comp-dot blue"></div><div class="comp-name">Alpha Generator</div><div class="comp-file">megatrade/alpha/generator.py</div><div class="comp-desc">10-template alpha generation with AST depth constraints. Code exists.</div></div>
+          <div class="comp-item s-code"><div class="comp-dot blue"></div><div class="comp-name">Stress Test</div><div class="comp-file">megatrade/research/stress_plan.py</div><div class="comp-desc">5 stress scenarios. Code exists.</div></div>
+          <div class="comp-item s-missing"><div class="comp-dot red"></div><div class="comp-name">vectorbt Pre-scan</div><div class="comp-file">-</div><div class="comp-desc">Reference uses vectorbt for fast signal pre-screening before full backtest.</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Layer 3 -->
+    <div class="layer-card">
+      <div class="layer-head" onclick="toggleLayer(this.parentElement)">
+        <div class="layer-left">
+          <div class="layer-idx l3">3</div>
+          <div class="layer-label">Deploy Gate</div>
+        </div>
+        <div class="layer-right">
+          <span class="badge badge-code">Code Only</span>
+          <span class="layer-chevron">&#9654;</span>
+        </div>
+      </div>
+      <div class="layer-body">
+        <div class="layer-desc">Reference: Account profiling + root cause analysis + lifecycle promotion (BACKTESTED > RESEARCH_PASSED > DEPLOYABLE)</div>
+        <div class="comp-grid">
+          <div class="comp-item s-code"><div class="comp-dot blue"></div><div class="comp-name">Deploy Gate</div><div class="comp-file">megatrade/deploy/deploy_gate.py</div><div class="comp-desc">5 validation checks before auto_trader update. Code exists, not connected.</div></div>
+          <div class="comp-item s-code"><div class="comp-dot blue"></div><div class="comp-name">Account Profile</div><div class="comp-file">megatrade/research/account_profile.py</div><div class="comp-desc">Account sizing + position allocation. Code exists.</div></div>
+          <div class="comp-item s-missing"><div class="comp-dot red"></div><div class="comp-name">Lifecycle State Machine</div><div class="comp-file">-</div><div class="comp-desc">VALIDATED > PAPER_LIVE > LIMITED_CAPITAL > ACTIVE. Not built.</div></div>
+          <div class="comp-item s-missing"><div class="comp-dot red"></div><div class="comp-name">Root Cause Analysis</div><div class="comp-file">-</div><div class="comp-desc">dispatch_root_cause_codes for deployment failures. Not built.</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Layer 4 -->
+    <div class="layer-card">
+      <div class="layer-head" onclick="toggleLayer(this.parentElement)">
+        <div class="layer-left">
+          <div class="layer-idx l4">4</div>
+          <div class="layer-label">Runtime Gate + Execution</div>
+        </div>
+        <div class="layer-right">
+          <span class="badge badge-partial">Needs Review</span>
+          <span class="layer-chevron">&#9654;</span>
+        </div>
+      </div>
+      <div class="layer-body">
+        <div class="layer-desc">Reference: Microstructure analysis + 4-dim position scaling + 8 reject codes + IBKR execution + position reconciliation</div>
+        <div class="comp-grid">
+          <div class="comp-item s-active"><div class="comp-dot green"></div><div class="comp-name">auto_trader.py v8.14</div><div class="comp-file">auto_trader.py</div><div class="comp-desc">Triple Signal + Enhanced Hedge. Alpaca paper trading. Main execution engine.</div></div>
+          <div class="comp-item s-review"><div class="comp-dot yellow"></div><div class="comp-name">Runtime Gate (HALT)</div><div class="comp-file">auto_trader.py (embedded)</div><div class="comp-desc">4 HALT conditions: 5-day loss, 15% DD, Sharpe &lt;-0.5, 5% single-day loss.</div></div>
+          <div class="comp-item s-active"><div class="comp-dot green"></div><div class="comp-name">Alpaca Client</div><div class="comp-file">alpaca_client.py</div><div class="comp-desc">REST API execution + portfolio history. Active.</div></div>
+          <div class="comp-item s-code"><div class="comp-dot blue"></div><div class="comp-name">IBKR Executor</div><div class="comp-file">megatrade/deploy/executor.py</div><div class="comp-desc">IBKRExecutor + PaperExecutor + TWAP. Code exists.</div></div>
+          <div class="comp-item s-code"><div class="comp-dot blue"></div><div class="comp-name">Risk Manager</div><div class="comp-file">megatrade/deploy/risk_manager.py</div><div class="comp-desc">Pre-trade risk checks + kill switch. Code exists.</div></div>
+          <div class="comp-item s-missing"><div class="comp-dot red"></div><div class="comp-name">Microstructure</div><div class="comp-file">-</div><div class="comp-desc">Kyle lambda, Glosten-Milgrom Roll, POV analysis. Not built.</div></div>
+          <div class="comp-item s-missing"><div class="comp-dot red"></div><div class="comp-name">Position Reconciler</div><div class="comp-file">-</div><div class="comp-desc">Local tracker vs broker drift detection. Not built.</div></div>
+          <div class="comp-item s-missing"><div class="comp-dot red"></div><div class="comp-name">Capacity-Aware Sizing</div><div class="comp-file">-</div><div class="comp-desc">Kelly + Beta + Vol + Geo risk 4-dim sizing. Not built.</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Layer 5 -->
+    <div class="layer-card">
+      <div class="layer-head" onclick="toggleLayer(this.parentElement)">
+        <div class="layer-left">
+          <div class="layer-idx l5">5</div>
+          <div class="layer-label">Monitoring + Scheduling + Event Risk</div>
+        </div>
+        <div class="layer-right">
+          <span class="badge badge-missing">Mostly Missing</span>
+          <span class="layer-chevron">&#9654;</span>
+        </div>
+      </div>
+      <div class="layer-body">
+        <div class="layer-desc">Reference: 4-level health degradation + EOD scheduler + event-driven hedging + decision audit + Dash dashboard</div>
+        <div class="comp-grid">
+          <div class="comp-item s-active"><div class="comp-dot green"></div><div class="comp-name">Cron Scheduling</div><div class="comp-file">crontab</div><div class="comp-desc">Basic cron for daily trading. No health checks or watchdog.</div></div>
+          <div class="comp-item s-code"><div class="comp-dot blue"></div><div class="comp-name">Dashboard</div><div class="comp-file">megatrade/deploy/dashboard.py</div><div class="comp-desc">Terminal dashboard + JSON export. Code exists.</div></div>
+          <div class="comp-item s-code"><div class="comp-dot blue"></div><div class="comp-name">Scheduler</div><div class="comp-file">megatrade/deploy/scheduler.py</div><div class="comp-desc">Daily/intraday scheduling. Code exists.</div></div>
+          <div class="comp-item s-code"><div class="comp-dot blue"></div><div class="comp-name">Online Updater</div><div class="comp-file">megatrade/deploy/online_updater.py</div><div class="comp-desc">Alpha-decay blending + drift detection. Code exists.</div></div>
+          <div class="comp-item s-missing"><div class="comp-dot red"></div><div class="comp-name">Event-Driven Risk</div><div class="comp-file">-</div><div class="comp-desc">VIX spike / geopolitical triggers + auto hedging. Not built.</div></div>
+          <div class="comp-item s-missing"><div class="comp-dot red"></div><div class="comp-name">Health Check (4-level)</div><div class="comp-file">-</div><div class="comp-desc">Normal > Warning > Degraded > Shutdown degradation chain. Not built.</div></div>
+          <div class="comp-item s-missing"><div class="comp-dot red"></div><div class="comp-name">Decision Audit</div><div class="comp-file">-</div><div class="comp-desc">Why did the system make this trade? Audit trail. Not built.</div></div>
+          <div class="comp-item s-missing"><div class="comp-dot red"></div><div class="comp-name">MLflow Tracking</div><div class="comp-file">-</div><div class="comp-desc">We use TSV files. Reference uses MLflow for 250-symbol experiment tracking.</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======= PIPELINE TAB ======= -->
+  <div id="panel-pipeline" class="view-panel">
+
+    <div class="pipeline-section">
+      <div class="pipeline-title">Current Active Pipeline</div>
+      <div class="pipeline-flow">
+        <div class="pipe-node n-active">
+          <div class="pipe-node-status" style="background:var(--green);box-shadow:0 0 6px rgba(0,230,118,0.4)"></div>
+          <div class="pipe-node-name">yfinance</div>
+          <div class="pipe-node-sub">OHLCV data</div>
+          <div class="pipe-node-time">Last: 2026-03-29 08:00</div>
+        </div>
+        <div class="pipe-arrow"><svg viewBox="0 0 36 12"><line class="arrow-line" x1="0" y1="6" x2="30" y2="6"/><polygon class="arrow-head" points="28,2 36,6 28,10"/><circle class="arrow-pulse" cx="18" cy="6" r="2"/></svg></div>
+        <div class="pipe-node n-active">
+          <div class="pipe-node-status" style="background:var(--green);box-shadow:0 0 6px rgba(0,230,118,0.4)"></div>
+          <div class="pipe-node-name">AutoResearch</div>
+          <div class="pipe-node-sub">v5 harness</div>
+          <div class="pipe-node-time">Last: 2026-03-29 08:15</div>
+        </div>
+        <div class="pipe-arrow"><svg viewBox="0 0 36 12"><line class="arrow-line" x1="0" y1="6" x2="30" y2="6"/><polygon class="arrow-head" points="28,2 36,6 28,10"/><circle class="arrow-pulse" cx="18" cy="6" r="2"/></svg></div>
+        <div class="pipe-node n-active">
+          <div class="pipe-node-status" style="background:var(--green);box-shadow:0 0 6px rgba(0,230,118,0.4)"></div>
+          <div class="pipe-node-name">Validation</div>
+          <div class="pipe-node-sub">IS/OOS walk-forward</div>
+          <div class="pipe-node-time">Last: 2026-03-29 08:15</div>
+        </div>
+        <div class="pipe-arrow"><svg viewBox="0 0 36 12"><line class="arrow-line" x1="0" y1="6" x2="30" y2="6" stroke-dasharray="4,3"/><polygon class="arrow-head" points="28,2 36,6 28,10" style="fill:var(--red);opacity:0.5"/></svg></div>
+        <div class="pipe-node n-missing">
+          <div class="pipe-node-status" style="background:var(--red)"></div>
+          <div class="pipe-node-name" style="color:var(--red)">Deploy Gate</div>
+          <div class="pipe-node-sub">Manual copy-paste</div>
+          <div class="pipe-node-time" style="color:var(--red)">BOTTLENECK</div>
+        </div>
+        <div class="pipe-arrow"><svg viewBox="0 0 36 12"><line class="arrow-line" x1="0" y1="6" x2="30" y2="6"/><polygon class="arrow-head" points="28,2 36,6 28,10"/></svg></div>
+        <div class="pipe-node n-active">
+          <div class="pipe-node-status" style="background:var(--green);box-shadow:0 0 6px rgba(0,230,118,0.4)"></div>
+          <div class="pipe-node-name">auto_trader</div>
+          <div class="pipe-node-sub">v8.14 Alpaca</div>
+          <div class="pipe-node-time">Last: 2026-03-28 16:00</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-sep" style="padding:0 0 20px"><div class="sep-line"></div></div>
+
+    <div class="pipeline-section">
+      <div class="pipeline-title">Target Pipeline (Reference Architecture)</div>
+      <div class="pipeline-flow">
+        <div class="pipe-node n-active">
+          <div class="pipe-node-name">7 Data Sources</div>
+          <div class="pipe-node-sub">yf + AV + GDELT + FRED</div>
+        </div>
+        <div class="pipe-arrow"><svg viewBox="0 0 36 12"><line class="arrow-line" x1="0" y1="6" x2="30" y2="6"/><polygon class="arrow-head" points="28,2 36,6 28,10"/><circle class="arrow-pulse" cx="18" cy="6" r="2"/></svg></div>
+        <div class="pipe-node n-code">
+          <div class="pipe-node-name">171-dim Features</div>
+          <div class="pipe-node-sub">pipeline.py</div>
+        </div>
+        <div class="pipe-arrow"><svg viewBox="0 0 36 12"><line class="arrow-line" x1="0" y1="6" x2="30" y2="6"/><polygon class="arrow-head" points="28,2 36,6 28,10"/></svg></div>
+        <div class="pipe-node n-code">
+          <div class="pipe-node-name">Research Gate</div>
+          <div class="pipe-node-sub">5-layer validation</div>
+        </div>
+        <div class="pipe-arrow"><svg viewBox="0 0 36 12"><line class="arrow-line" x1="0" y1="6" x2="30" y2="6"/><polygon class="arrow-head" points="28,2 36,6 28,10"/></svg></div>
+        <div class="pipe-node n-code">
+          <div class="pipe-node-name">Deploy Gate</div>
+          <div class="pipe-node-sub">5 checks + promote</div>
+        </div>
+        <div class="pipe-arrow"><svg viewBox="0 0 36 12"><line class="arrow-line" x1="0" y1="6" x2="30" y2="6"/><polygon class="arrow-head" points="28,2 36,6 28,10"/></svg></div>
+        <div class="pipe-node n-partial">
+          <div class="pipe-node-name">Runtime Gate</div>
+          <div class="pipe-node-sub">HALT + risk control</div>
+        </div>
+        <div class="pipe-arrow"><svg viewBox="0 0 36 12"><line class="arrow-line" x1="0" y1="6" x2="30" y2="6"/><polygon class="arrow-head" points="28,2 36,6 28,10"/></svg></div>
+        <div class="pipe-node n-active">
+          <div class="pipe-node-name">Executor</div>
+          <div class="pipe-node-sub">Alpaca / IBKR</div>
+        </div>
+        <div class="pipe-arrow"><svg viewBox="0 0 36 12"><line class="arrow-line" x1="0" y1="6" x2="30" y2="6"/><polygon class="arrow-head" points="28,2 36,6 28,10"/></svg></div>
+        <div class="pipe-node n-missing">
+          <div class="pipe-node-name">Monitor</div>
+          <div class="pipe-node-sub">Health + audit</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-box">
+      <h4>Key Gap: The "Manual" Step</h4>
+      <p>The biggest bottleneck is the manual step between AutoResearch and auto_trader. When autoresearch finds a better config (e.g., OOS Sharpe 2.03), someone must manually extract the parameters and update auto_trader.py. The reference has a Deploy Gate that automates this: if a strategy passes all 5 research gates, it automatically promotes to paper trading.</p>
+    </div>
+  </div>
+
+  <!-- ======= EXPERIMENTS TAB ======= -->
+  <div id="panel-experiments" class="view-panel">
+    <div class="exp-table-wrap">
+      <table class="exp-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Strategy</th>
+            <th>OOS Sharpe</th>
+            <th>CAGR</th>
+            <th>Max DD</th>
+            <th>Grade</th>
+            <th>Equity Curve</th>
+            <th>Date</th>
+          </tr>
+        </thead>
+        <tbody id="exp-tbody">
+        </tbody>
+      </table>
+    </div>
+    <div class="info-box" style="margin-top:16px;">
+      <h4>Experiment History</h4>
+      <p>Showing the most recent 10 experiments from AutoResearch v5. Data is simulated for display; connect to results_v4.tsv for live data. Sparklines show normalized equity curve shape.</p>
+    </div>
+  </div>
+
+  <!-- ======= MAPPING TAB ======= -->
+  <div id="panel-mapping" class="view-panel">
+    <div class="mapping-wrap">
+      <table class="map-table">
+        <thead>
+          <tr>
+            <th>Reference Component</th>
+            <th>Our Implementation</th>
+            <th>Status</th>
+            <th>Gap</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>PostgreSQL 18 + BigQuery</td><td>DuckDB (megatrade) / yfinance direct</td><td><span class="tag tag-code">Code</span></td><td>No persistent DB in production</td></tr>
+          <tr><td>78+41 dim features (119)</td><td>171 dim features (megatrade code)</td><td><span class="tag tag-code">Code</span></td><td>More dims but unused; actual trading uses ~5 factors</td></tr>
+          <tr><td>Research Gate 5-layer</td><td>AutoResearch v5 (IS/OOS WF)</td><td><span class="tag tag-active">Active</span></td><td>Only base layer; missing cost_x2, robust, stress, ml_oos</td></tr>
+          <tr><td>LightGBM + MetaLabeling</td><td>megatrade/models/ code</td><td><span class="tag tag-code">Code</span></td><td>ML failed in practice (9 rounds, no stable alpha)</td></tr>
+          <tr><td>Alpha 3-Agent Cycle</td><td>megatrade/alpha/ code</td><td><span class="tag tag-code">Code</span></td><td>Template-based, no Idea/Factor/Eval loop</td></tr>
+          <tr><td>Deploy Gate (lifecycle)</td><td>megatrade/deploy/deploy_gate.py</td><td><span class="tag tag-code">Code</span></td><td>5 checks exist, not connected to autoresearch</td></tr>
+          <tr><td>Runtime Gate (8 reject)</td><td>HALT flag in auto_trader.py</td><td><span class="tag tag-review">Review</span></td><td>Basic 4-condition HALT, no reject codes or scaling</td></tr>
+          <tr><td>IBKR ib_insync execution</td><td>Alpaca REST API</td><td><span class="tag tag-active">Active</span></td><td>Different broker, simpler API, no TWAP</td></tr>
+          <tr><td>Microstructure (Kyle/GM)</td><td>-</td><td><span class="tag tag-missing">Missing</span></td><td>No price impact or adverse selection analysis</td></tr>
+          <tr><td>Event-driven risk</td><td>-</td><td><span class="tag tag-missing">Missing</span></td><td>No automatic hedging on macro events</td></tr>
+          <tr><td>Position reconciler</td><td>-</td><td><span class="tag tag-missing">Missing</span></td><td>No local vs broker drift detection</td></tr>
+          <tr><td>4-level health degradation</td><td>-</td><td><span class="tag tag-missing">Missing</span></td><td>No Normal > Warning > Degraded > Shutdown</td></tr>
+          <tr><td>EOD scheduler + watchdog</td><td>Basic cron</td><td><span class="tag tag-active">Active</span></td><td>No DB freshness check, no auto-retry</td></tr>
+          <tr><td>Decision audit + Dash</td><td>-</td><td><span class="tag tag-missing">Missing</span></td><td>No audit trail or visual dashboard</td></tr>
+          <tr><td>MLflow (250 symbols)</td><td>TSV files (results_v4.tsv)</td><td><span class="tag tag-active">Active</span></td><td>Simple but functional</td></tr>
+          <tr><td>Online learner (River)</td><td>megatrade/deploy/online_updater.py</td><td><span class="tag tag-code">Code</span></td><td>Alpha-decay blending, not used</td></tr>
+          <tr><td>Discord bot commands</td><td>OpenClaw Discord bots</td><td><span class="tag tag-active">Active</span></td><td>Different architecture (OpenClaw vs native)</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ======= PRIORITY TAB ======= -->
+  <div id="panel-priority" class="view-panel">
+    <div style="margin-bottom:16px;">
+      <div style="font-family:var(--sans);font-size:15px;font-weight:600;color:var(--heading);margin-bottom:4px;">Implementation Roadmap</div>
+      <div style="font-size:12px;color:var(--text-muted);">Based on impact/effort analysis. Focus on connecting existing code before building new.</div>
+    </div>
+
+    <div class="priority-item">
+      <div class="pri-rank" style="color:var(--red)">1</div>
+      <div class="pri-body">
+        <div class="pri-title">Connect Research Gate to AutoResearch</div>
+        <div class="pri-impact" style="color:var(--red)">Impact: Critical</div>
+        <div class="pri-desc">MegaTrade gate.py already has 5-layer logic. Wire it so autoresearch results automatically pass through cost_x2 + robust + stress + ml_oos gates. Single highest-value integration.</div>
+      </div>
+    </div>
+
+    <div class="priority-item">
+      <div class="pri-rank" style="color:var(--red)">2</div>
+      <div class="pri-body">
+        <div class="pri-title">Connect Deploy Gate to auto_trader.py</div>
+        <div class="pri-impact" style="color:var(--red)">Impact: Critical</div>
+        <div class="pri-desc">deploy_gate.py has 5 validation checks. If a config passes Research Gate + Deploy Gate, auto-update auto_trader.py parameters. Eliminates the "Manual" bottleneck.</div>
+      </div>
+    </div>
+
+    <div class="priority-item">
+      <div class="pri-rank" style="color:var(--yellow)">3</div>
+      <div class="pri-body">
+        <div class="pri-title">Review & Activate Runtime Gate</div>
+        <div class="pri-impact" style="color:var(--yellow)">Impact: Medium</div>
+        <div class="pri-desc">HALT logic was added but also changed trading params (v7.1 > v8.14 conflict). Need selective revert, then activate the 4-condition monitoring.</div>
+      </div>
+    </div>
+
+    <div class="priority-item">
+      <div class="pri-rank" style="color:var(--yellow)">4</div>
+      <div class="pri-body">
+        <div class="pri-title">Event-Driven Risk Control</div>
+        <div class="pri-impact" style="color:var(--yellow)">Impact: Medium</div>
+        <div class="pri-desc">Monitor VIX, oil, macro indicators. Auto-suggest hedging when thresholds breach. Reference's 3-button Discord UI (Execute/Pause/Cancel) is a good model.</div>
+      </div>
+    </div>
+
+    <div class="priority-item">
+      <div class="pri-rank" style="color:var(--green)">5</div>
+      <div class="pri-body">
+        <div class="pri-title">Live Dashboard</div>
+        <div class="pri-impact" style="color:var(--green)">Impact: Low-Med</div>
+        <div class="pri-desc">Real-time view of positions, PnL, system health, recent experiments. MegaTrade dashboard.py exists. Could also build as web dashboard.</div>
+      </div>
+    </div>
+
+    <div class="priority-item">
+      <div class="pri-rank" style="color:var(--green)">6</div>
+      <div class="pri-body">
+        <div class="pri-title">Position Reconciliation</div>
+        <div class="pri-impact" style="color:var(--green)">Impact: Low</div>
+        <div class="pri-desc">Compare local state vs Alpaca positions. Detect drift. Important for production but less urgent for paper trading phase.</div>
+      </div>
+    </div>
+
+    <div class="info-box" style="border-left-color:var(--green);">
+      <h4>Core Principle</h4>
+      <p><strong>Connect before build.</strong> We have 14 components as code that aren't used. The highest ROI is wiring them into the actual pipeline, not building new things. Priority #1 and #2 alone would close the biggest gap.</p>
+    </div>
+  </div>
+
+</div><!-- main-content -->
+
+<!-- FOOTER -->
+<div class="footer">
+  QTS // Quant Trading System Dashboard | 5-Layer Architecture | Updated 2026-03-29
 </div>
 
 <script>
+// === Tab switching ===
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', function() {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
+    this.classList.add('active');
+    const panel = document.getElementById('panel-' + this.dataset.tab);
+    if (panel) {
+      panel.classList.add('active');
+      // Re-trigger animation
+      panel.style.animation = 'none';
+      panel.offsetHeight;
+      panel.style.animation = '';
+    }
+  });
+});
+
+// === Layer toggle ===
 function toggleLayer(el) {
-  // Don't toggle if clicking inside the body
-  if (event.target.closest('.layer-body')) return;
-  el.classList.toggle('open');
+  if (event && event.target.closest('.layer-body')) return;
+  el.classList.toggle('expanded');
 }
 
-function switchTab(name) {
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-  event.target.classList.add('active');
-  document.getElementById('view-' + name).classList.add('active');
+// === Animated counters ===
+function animateCounters() {
+  document.querySelectorAll('[data-count]').forEach(el => {
+    const target = parseFloat(el.dataset.count);
+    const decimals = parseInt(el.dataset.decimals) || 0;
+    const suffix = el.dataset.suffix || '';
+    const duration = 1800;
+    const start = performance.now();
+    const isNeg = target < 0;
+    const absTarget = Math.abs(target);
+
+    function update(now) {
+      const elapsed = now - start;
+      const progress = Math.min(elapsed / duration, 1);
+      // Ease out cubic
+      const eased = 1 - Math.pow(1 - progress, 3);
+      const current = absTarget * eased;
+      el.textContent = (isNeg ? '-' : '') + current.toFixed(decimals) + suffix;
+      if (progress < 1) requestAnimationFrame(update);
+    }
+    requestAnimationFrame(update);
+  });
 }
+
+// === Animate metric bars ===
+function animateBars() {
+  document.querySelectorAll('.metric-bar-fill[data-width]').forEach(el => {
+    setTimeout(() => {
+      el.style.width = el.dataset.width + '%';
+    }, 600);
+  });
+}
+
+// === Animate coverage segments ===
+function animateCoverage() {
+  document.querySelectorAll('.cov-seg[data-width]').forEach(el => {
+    setTimeout(() => {
+      el.style.width = el.dataset.width + '%';
+    }, 800);
+  });
+}
+
+// === Generate experiment data ===
+function generateExperiments() {
+  const strategies = [
+    { name: 'Momentum v9.15', sharpe: 2.09, cagr: 25.0, dd: -6.3, grade: 'A', date: '2026-03-29' },
+    { name: 'Momentum v9.14', sharpe: 2.03, cagr: 24.2, dd: -6.8, grade: 'A', date: '2026-03-28' },
+    { name: 'Triple Signal v8.14', sharpe: 1.74, cagr: 19.1, dd: -8.2, grade: 'B+', date: '2026-03-27' },
+    { name: 'MeanRev + Hedge', sharpe: 1.52, cagr: 16.8, dd: -9.1, grade: 'B', date: '2026-03-26' },
+    { name: 'Multi-Factor v3', sharpe: 1.41, cagr: 15.2, dd: -10.4, grade: 'B', date: '2026-03-25' },
+    { name: 'Vol Breakout', sharpe: 1.29, cagr: 14.0, dd: -11.2, grade: 'B-', date: '2026-03-24' },
+    { name: 'Momentum + ML', sharpe: 0.89, cagr: 10.1, dd: -14.5, grade: 'C', date: '2026-03-23' },
+    { name: 'Pairs Trading', sharpe: 0.72, cagr: 8.3, dd: -12.1, grade: 'C-', date: '2026-03-22' },
+    { name: 'LightGBM Alpha', sharpe: 0.45, cagr: 5.2, dd: -18.3, grade: 'D', date: '2026-03-21' },
+    { name: 'MetaLabel Filter', sharpe: 0.31, cagr: 3.1, dd: -20.7, grade: 'D', date: '2026-03-20' },
+  ];
+
+  // Sparkline curves (pre-computed normalized values 0-1)
+  const curves = [
+    [0.1,0.15,0.2,0.18,0.25,0.35,0.42,0.5,0.55,0.65,0.72,0.8,0.85,0.92,1.0],
+    [0.08,0.12,0.18,0.22,0.3,0.28,0.38,0.45,0.55,0.62,0.7,0.78,0.82,0.9,0.95],
+    [0.1,0.2,0.25,0.3,0.28,0.35,0.45,0.48,0.52,0.58,0.65,0.6,0.7,0.75,0.82],
+    [0.15,0.18,0.22,0.2,0.28,0.32,0.38,0.42,0.45,0.5,0.55,0.6,0.65,0.72,0.78],
+    [0.1,0.15,0.2,0.25,0.22,0.28,0.35,0.3,0.38,0.42,0.48,0.55,0.6,0.65,0.7],
+    [0.12,0.18,0.15,0.22,0.25,0.3,0.28,0.35,0.4,0.38,0.45,0.5,0.55,0.58,0.62],
+    [0.1,0.15,0.2,0.25,0.22,0.18,0.25,0.3,0.28,0.35,0.32,0.38,0.4,0.42,0.45],
+    [0.1,0.12,0.18,0.15,0.2,0.18,0.22,0.25,0.22,0.28,0.32,0.3,0.35,0.38,0.4],
+    [0.1,0.18,0.22,0.15,0.2,0.18,0.15,0.22,0.18,0.2,0.22,0.18,0.2,0.22,0.25],
+    [0.15,0.2,0.18,0.15,0.12,0.18,0.15,0.12,0.15,0.18,0.15,0.12,0.15,0.18,0.15],
+  ];
+
+  const tbody = document.getElementById('exp-tbody');
+  strategies.forEach((s, i) => {
+    const gradeClass = s.grade.startsWith('A') ? 'grade-a' : s.grade.startsWith('B') ? 'grade-b' : s.grade.startsWith('C') ? 'grade-c' : 'grade-d';
+    const sharpeColor = s.sharpe >= 1.5 ? 'var(--green)' : s.sharpe >= 1.0 ? 'var(--blue)' : s.sharpe >= 0.5 ? 'var(--yellow)' : 'var(--red)';
+    const sparkColor = s.sharpe >= 1.5 ? '#00e676' : s.sharpe >= 1.0 ? '#40c4ff' : s.sharpe >= 0.5 ? '#ffd740' : '#ff5252';
+
+    // Build sparkline SVG path
+    const pts = curves[i];
+    const w = 60, h = 20, pad = 2;
+    let pathD = '';
+    pts.forEach((v, j) => {
+      const x = pad + (j / (pts.length - 1)) * (w - 2 * pad);
+      const y = h - pad - v * (h - 2 * pad);
+      pathD += (j === 0 ? 'M' : 'L') + x.toFixed(1) + ',' + y.toFixed(1);
+    });
+
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td style="color:var(--text-muted)">${364 - i}</td>
+      <td style="font-weight:600;color:var(--heading)">${s.name}</td>
+      <td style="color:${sharpeColor};font-weight:600">${s.sharpe.toFixed(2)}</td>
+      <td>${s.cagr.toFixed(1)}%</td>
+      <td style="color:var(--red)">${s.dd.toFixed(1)}%</td>
+      <td><span class="grade ${gradeClass}">${s.grade}</span></td>
+      <td><span class="sparkline"><svg viewBox="0 0 ${w} ${h}"><path d="${pathD}" fill="none" stroke="${sparkColor}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></td>
+      <td style="color:var(--text-muted)">${s.date}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+// === Init ===
+document.addEventListener('DOMContentLoaded', function() {
+  setTimeout(animateCounters, 400);
+  setTimeout(animateBars, 200);
+  setTimeout(animateCoverage, 200);
+  generateExperiments();
+});
 </script>
 </body>
 </html>
