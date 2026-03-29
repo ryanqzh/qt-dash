@@ -1,0 +1,1006 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quant Trading System Dashboard</title>
+<style>
+  :root {
+    --bg: #0d1117;
+    --card: #161b22;
+    --border: #30363d;
+    --text: #c9d1d9;
+    --text-dim: #8b949e;
+    --green: #3fb950;
+    --yellow: #d29922;
+    --red: #f85149;
+    --blue: #58a6ff;
+    --purple: #bc8cff;
+    --orange: #d18616;
+    --cyan: #39d353;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    padding: 20px;
+    min-height: 100vh;
+  }
+  h1 {
+    text-align: center;
+    font-size: 24px;
+    margin-bottom: 8px;
+    color: #f0f6fc;
+  }
+  .subtitle {
+    text-align: center;
+    color: var(--text-dim);
+    font-size: 14px;
+    margin-bottom: 24px;
+  }
+
+  /* Legend */
+  .legend {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: var(--text-dim);
+  }
+  .legend-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+  }
+  .dot-active { background: var(--green); }
+  .dot-code { background: var(--blue); }
+  .dot-missing { background: var(--red); }
+  .dot-review { background: var(--yellow); }
+
+  /* Architecture flow */
+  .arch-container {
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  /* Tabs */
+  .tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 20px;
+    justify-content: center;
+  }
+  .tab {
+    padding: 8px 20px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    color: var(--text-dim);
+    transition: all 0.2s;
+  }
+  .tab:hover { border-color: var(--blue); color: var(--text); }
+  .tab.active { background: var(--blue); color: #fff; border-color: var(--blue); }
+
+  .view { display: none; }
+  .view.active { display: block; }
+
+  /* Layer card */
+  .layer {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin-bottom: 16px;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+  .layer:hover { border-color: var(--blue); }
+  .layer-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 20px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .layer-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .layer-num {
+    background: var(--blue);
+    color: #fff;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+  .layer-name {
+    font-weight: 600;
+    font-size: 16px;
+  }
+  .layer-badge {
+    font-size: 12px;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-weight: 500;
+  }
+  .badge-active { background: rgba(63,185,80,0.15); color: var(--green); }
+  .badge-partial { background: rgba(210,153,34,0.15); color: var(--yellow); }
+  .badge-code { background: rgba(88,166,255,0.15); color: var(--blue); }
+  .badge-missing { background: rgba(248,81,73,0.15); color: var(--red); }
+
+  .layer-body {
+    display: none;
+    padding: 0 20px 16px;
+  }
+  .layer.open .layer-body { display: block; }
+  .layer-arrow {
+    transition: transform 0.2s;
+    color: var(--text-dim);
+  }
+  .layer.open .layer-arrow { transform: rotate(90deg); }
+
+  /* Component grid */
+  .comp-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 10px;
+    margin-top: 12px;
+  }
+  .comp {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 12px;
+    position: relative;
+    transition: all 0.2s;
+  }
+  .comp:hover { border-color: var(--blue); transform: translateY(-1px); }
+  .comp-status {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+  }
+  .comp-name { font-weight: 600; font-size: 14px; margin-bottom: 4px; padding-right: 20px; }
+  .comp-file { font-size: 12px; color: var(--text-dim); font-family: monospace; margin-bottom: 4px; }
+  .comp-desc { font-size: 12px; color: var(--text-dim); line-height: 1.5; }
+
+  /* Mapping view */
+  .mapping-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+  }
+  .mapping-table th {
+    background: var(--card);
+    padding: 10px 14px;
+    text-align: left;
+    border-bottom: 2px solid var(--border);
+    color: var(--text-dim);
+    font-weight: 600;
+    position: sticky;
+    top: 0;
+  }
+  .mapping-table td {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  .mapping-table tr:hover td { background: rgba(88,166,255,0.05); }
+  .status-tag {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 500;
+  }
+  .tag-active { background: rgba(63,185,80,0.15); color: var(--green); }
+  .tag-code { background: rgba(88,166,255,0.15); color: var(--blue); }
+  .tag-missing { background: rgba(248,81,73,0.15); color: var(--red); }
+  .tag-review { background: rgba(210,153,34,0.15); color: var(--yellow); }
+
+  /* Stats bar */
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  .stat-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    text-align: center;
+  }
+  .stat-num {
+    font-size: 32px;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .stat-label {
+    font-size: 13px;
+    color: var(--text-dim);
+  }
+
+  /* Flow diagram */
+  .flow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    margin: 24px 0;
+    flex-wrap: wrap;
+  }
+  .flow-node {
+    background: var(--card);
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 18px;
+    text-align: center;
+    min-width: 140px;
+    transition: all 0.2s;
+    cursor: default;
+  }
+  .flow-node:hover { border-color: var(--blue); transform: scale(1.02); }
+  .flow-node.fn-active { border-color: var(--green); }
+  .flow-node.fn-partial { border-color: var(--yellow); }
+  .flow-node.fn-code { border-color: var(--blue); border-style: dashed; }
+  .flow-node.fn-missing { border-color: var(--red); border-style: dotted; }
+  .flow-node-title { font-weight: 600; font-size: 14px; margin-bottom: 2px; }
+  .flow-node-sub { font-size: 11px; color: var(--text-dim); }
+  .flow-arrow {
+    font-size: 20px;
+    color: var(--text-dim);
+    padding: 0 8px;
+  }
+
+  /* Priority list */
+  .priority-list {
+    list-style: none;
+    margin-top: 16px;
+  }
+  .priority-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .priority-list li:last-child { border-bottom: none; }
+  .priority-rank {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 13px;
+    flex-shrink: 0;
+  }
+  .priority-content { flex: 1; }
+  .priority-title { font-weight: 600; font-size: 14px; }
+  .priority-desc { font-size: 12px; color: var(--text-dim); margin-top: 2px; }
+
+  /* Gap chart */
+  .gap-bar {
+    display: flex;
+    height: 24px;
+    border-radius: 6px;
+    overflow: hidden;
+    margin: 8px 0;
+  }
+  .gap-segment {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 600;
+    color: #fff;
+    transition: width 0.5s;
+  }
+  .gap-active { background: var(--green); }
+  .gap-code { background: var(--blue); }
+  .gap-missing { background: var(--red); opacity: 0.7; }
+
+  @media (max-width: 600px) {
+    .comp-grid { grid-template-columns: 1fr; }
+    .flow { flex-direction: column; }
+    .flow-arrow { transform: rotate(90deg); }
+    .stats { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<h1>Quant Trading System</h1>
+<p class="subtitle">Based on 牧之林/丹丹交易團隊 5-Layer Architecture | Updated 2026-03-29</p>
+
+<!-- Legend -->
+<div class="legend">
+  <div class="legend-item"><div class="legend-dot dot-active"></div> Active (in use)</div>
+  <div class="legend-item"><div class="legend-dot dot-code"></div> Code exists (not used)</div>
+  <div class="legend-item"><div class="legend-dot dot-review"></div> Needs review</div>
+  <div class="legend-item"><div class="legend-dot dot-missing"></div> Not built</div>
+</div>
+
+<!-- Stats -->
+<div class="stats">
+  <div class="stat-card">
+    <div class="stat-num" style="color:var(--green)">6</div>
+    <div class="stat-label">Active Components</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-num" style="color:var(--blue)">14</div>
+    <div class="stat-label">Code Exists (unused)</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-num" style="color:var(--red)">10</div>
+    <div class="stat-label">Not Built</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-num" style="color:var(--purple)">364+</div>
+    <div class="stat-label">Experiments Run</div>
+  </div>
+</div>
+
+<!-- Coverage bar -->
+<div style="max-width:600px;margin:0 auto 24px;">
+  <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text-dim);margin-bottom:4px;">
+    <span>System Coverage vs 牧之林</span>
+    <span>30 components total</span>
+  </div>
+  <div class="gap-bar">
+    <div class="gap-segment gap-active" style="width:20%">20%</div>
+    <div class="gap-segment gap-code" style="width:47%">47%</div>
+    <div class="gap-segment gap-missing" style="width:33%">33%</div>
+  </div>
+  <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-dim);margin-top:4px;">
+    <span>6 active</span>
+    <span>14 code only</span>
+    <span>10 missing</span>
+  </div>
+</div>
+
+<!-- Tabs -->
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('arch')">Architecture</div>
+  <div class="tab" onclick="switchTab('flow')">Data Flow</div>
+  <div class="tab" onclick="switchTab('mapping')">Mapping Table</div>
+  <div class="tab" onclick="switchTab('priority')">Priority</div>
+</div>
+
+<div class="arch-container">
+
+<!-- Architecture View -->
+<div id="view-arch" class="view active">
+
+  <!-- Layer 1 -->
+  <div class="layer open" onclick="toggleLayer(this)">
+    <div class="layer-header">
+      <div class="layer-title">
+        <div class="layer-num">1</div>
+        <span class="layer-name">Data Platform + Feature Engineering</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span class="layer-badge badge-code">Code Only</span>
+        <span class="layer-arrow">&#9654;</span>
+      </div>
+    </div>
+    <div class="layer-body">
+      <p style="font-size:13px;color:var(--text-dim);margin-bottom:8px;">
+        牧之林: PostgreSQL 18 + DuckDB + Parquet Cache + BigQuery | 78+41=119 dim features
+      </p>
+      <div class="comp-grid">
+        <div class="comp">
+          <div class="comp-status dot-code"></div>
+          <div class="comp-name">DuckDB Warehouse</div>
+          <div class="comp-file">megatrade/data/warehouse.py</div>
+          <div class="comp-desc">7 data sources, DuckDB storage. Code exists, not connected to trading.</div>
+        </div>
+        <div class="comp">
+          <div class="comp-status dot-code"></div>
+          <div class="comp-name">171-dim Features</div>
+          <div class="comp-file">megatrade/features/*.py</div>
+          <div class="comp-desc">TECH(41) + VOL(15) + ALPHA(14) + GEO(20) + SENT(5) + EXT(8) + PHYS(8) + FACTORS(60)</div>
+        </div>
+        <div class="comp">
+          <div class="comp-status dot-active"></div>
+          <div class="comp-name">AutoResearch Features</div>
+          <div class="comp-file">autoresearch/strategy.py</div>
+          <div class="comp-desc">Actually used: momentum factors, OBV, RSI, etc. in strategy.py backtest.</div>
+        </div>
+        <div class="comp">
+          <div class="comp-status dot-missing"></div>
+          <div class="comp-name">PostgreSQL Main Store</div>
+          <div class="comp-file">-</div>
+          <div class="comp-desc">牧之林 uses PG18 as primary. We only have DuckDB (megatrade) and yfinance direct.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Layer 2 -->
+  <div class="layer" onclick="toggleLayer(this)">
+    <div class="layer-header">
+      <div class="layer-title">
+        <div class="layer-num">2</div>
+        <span class="layer-name">Candidate + Research Gate</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span class="layer-badge badge-active">Partially Active</span>
+        <span class="layer-arrow">&#9654;</span>
+      </div>
+    </div>
+    <div class="layer-body">
+      <p style="font-size:13px;color:var(--text-dim);margin-bottom:8px;">
+        牧之林: 5-layer gate (base→cost_x2→robust→stress→ml_oos) + vectorbt prescan + ML subsystem
+      </p>
+      <div class="comp-grid">
+        <div class="comp">
+          <div class="comp-status dot-active"></div>
+          <div class="comp-name">AutoResearch v5</div>
+          <div class="comp-file">autoresearch/run_v5.py</div>
+          <div class="comp-desc">Our main research tool. Learnings memory, independent evaluator, auto-proposal. 364+ experiments.</div>
+        </div>
+        <div class="comp">
+          <div class="comp-status dot-active"></div>
+          <div class="comp-name">IS/OOS Walk-Forward</div>
+          <div class="comp-file">autoresearch/strategy.py</div>
+          <div class="comp-desc">4-fold WF (2016-2023) + OOS holdout (2024-2026). Base validation.</div>
+        </div>
+        <div class="comp">
+          <div class="comp-status dot-active"></div>
+          <div class="comp-name">Knowledge System</div>
+          <div class="comp-file">knowledge/</div>
+          <div class="comp-desc">Rules/hypotheses/knowledge per domain. Hypothesis confirmed 5+ times upgrades to rule.</div>
+        </div>
+        <div class="comp">
+          <div class="comp-status dot-code"></div>
+          <div class="comp-name">5-Layer Research Gate</div>
+          <div class="comp-file">megatrade/research/gate.py</div>
+          <div class="comp-desc">base→cost_x2→robust→stress→ml_oos. Code exists, not connected to autoresearch.</div>
+        </div>
+        <div class="comp">
+          <div class="comp-status dot-code"></div>
+          <div class="comp-name">LightGBM Signal Model</div>
+          <div class="comp-file">megatrade/models/lightgbm_signal.py</div>
+          <div class="comp-desc">Rolling Walk-Forward CV, lr=0.02, 500 trees. Code exists.</div>
+        </div>
+        <div class="comp">
+          <div class="comp-status dot-code"></div>
+          <div class="comp-name">MetaLabeling</div>
+          <div class="comp-file">megatrade/models/meta_labeling.py</div>
+          <div class="comp-desc">Dual filter (intent cost + 26-dim features). Code exists.</div>
+        </div>
+        <div class="comp">
+          <div class="comp-status dot-code"></div>
+          <div class="comp-name">Alpha Generator</div>
+          <div class="comp-file">megatrade/alpha/generator.py</div>
+          <div class="comp-desc">10-template alpha generation with AST depth constraints. Code exists.</div>
+        </div>
+        <div class="comp">
+          <div class="comp-status dot-code"></div>
+          <div class="comp-name">Stress Test</div>
+          <div class="comp-file">megatrade/research/stress_plan.py</div>
+          <div class="comp-desc">5 stress scenarios. Code exists.</div>
+        </div>
+        <div class="comp">
+          <div class="comp-status dot-missing"></div>
+          <div class="comp-name">vectorbt Pre-scan</div>
+          <div class="comp-file">-</div>
+          <div class="comp-desc">牧之林 uses vectorbt for fast signal pre-screening before full backtest.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Layer 3 -->
+  <div class="layer" onclick="toggleLayer(this)">
+    <div class="layer-header">
+      <div class="layer-title">
+        <div class="layer-num">3</div>
+        <span class="layer-name">Deploy Gate</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span class="layer-badge badge-code">Code Only</span>
+        <span class="layer-arrow">&#9654;</span>
+      </div>
+    </div>
+    <div class="layer-body">
+      <p style="font-size:13px;color:var(--text-dim);margin-bottom:8px;">
+        牧之林: Account profiling + root cause analysis + lifecycle promotion (BACKTESTED→RESEARCH_PASSED→DEPLOYABLE)
+      </p>
+      <div class="comp-grid">
+        <div class="comp">
+          <div class="comp-status dot-code"></div>
+          <div class="comp-name">Deploy Gate</div>
+          <div class="comp-file">megatrade/deploy/deploy_gate.py</div>
+          <div class="comp-desc">5 validation checks before auto_trader update. Code exists, not connected.</div>
+        </div>
+        <div class="comp">
+          <div class="comp-status dot-code"></div>
+          <div class="comp-name">Account Profile</div>
+          <div class="comp-file">megatrade/research/account_profile.py</div>
+          <div class="comp-desc">Account sizing + position allocation. Code exists.</div>
+        </div>
+        <div class="comp">
+          <div class="comp-status dot-missing"></div>
+          <div class="comp-name">Lifecycle State Machine</div>
+          <div class="comp-file">-</div>
+          <div class="comp-desc">VALIDATED→PAPER_LIVE→LIMITED_CAPITAL→ACTIVE. Not built.</div>
+        </div>
+        <div class="comp">
+          <div class="comp-status dot-missing"></div>
+          <div class="comp-name">Root Cause Analysis</div>
+          <div class="comp-file">-</div>
+          <div class="comp-desc">dispatch_root_cause_codes for deployment failures. Not built.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Layer 4 -->
+  <div class="layer" onclick="toggleLayer(this)">
+    <div class="layer-header">
+      <div class="layer-title">
+        <div class="layer-num">4</div>
+        <span class="layer-name">Runtime Gate + Execution</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span class="layer-badge badge-partial">Needs Review</span>
+        <span class="layer-arrow">&#9654;</span>
+      </div>
+    </div>
+    <div class="layer-body">
+      <p style="font-size:13px;color:var(--text-dim);margin-bottom:8px;">
+        牧之林: Microstructure analysis + 4-dim position scaling + 8 reject codes + IBKR execution + position reconciliation
+      </p>
+      <div class="comp-grid">
+        <div class="comp">
+          <div class="comp-status dot-active"></div>
+          <div class="comp-name">auto_trader.py v8.14</div>
+          <div class="comp-file">auto_trader.py</div>
+          <div class="comp-desc">Triple Signal + Enhanced Hedge. Alpaca paper trading. Our main execution engine.</div>
+        </div>
+        <div class="comp">
+          <div class="comp-status dot-review"></div>
+          <div class="comp-name">Runtime Gate (HALT)</div>
+          <div class="comp-file">auto_trader.py (embedded)</div>
+          <div class="comp-desc">4 HALT conditions: 5-day loss, 15% DD, Sharpe &lt;-0.5, 5% single-day loss. Needs review.</div>
+        </div>
+        <div class="comp">
+          <div class="comp-status dot-active"></div>
+          <div class="comp-name">Alpaca Client</div>
+          <div class="comp-file">alpaca_client.py</div>
+          <div class="comp-desc">REST API execution + portfolio history. Active.</div>
+        </div>
+        <div class="comp">
+          <div class="comp-status dot-code"></div>
+          <div class="comp-name">IBKR Executor</div>
+          <div class="comp-file">megatrade/deploy/executor.py</div>
+          <div class="comp-desc">IBKRExecutor + PaperExecutor + TWAP. Code exists.</div>
+        </div>
+        <div class="comp">
+          <div class="comp-status dot-code"></div>
+          <div class="comp-name">Risk Manager</div>
+          <div class="comp-file">megatrade/deploy/risk_manager.py</div>
+          <div class="comp-desc">Pre-trade risk checks + kill switch. Code exists.</div>
+        </div>
+        <div class="comp">
+          <div class="comp-status dot-missing"></div>
+          <div class="comp-name">Microstructure</div>
+          <div class="comp-file">-</div>
+          <div class="comp-desc">Kyle lambda, Glosten-Milgrom Roll, POV analysis. Not built.</div>
+        </div>
+        <div class="comp">
+          <div class="comp-status dot-missing"></div>
+          <div class="comp-name">Position Reconciler</div>
+          <div class="comp-file">-</div>
+          <div class="comp-desc">Local tracker vs broker drift detection. Not built.</div>
+        </div>
+        <div class="comp">
+          <div class="comp-status dot-missing"></div>
+          <div class="comp-name">Capacity-Aware Sizing</div>
+          <div class="comp-file">-</div>
+          <div class="comp-desc">Kelly + Beta + Vol + Geo risk 4-dim sizing. Not built.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Layer 5 -->
+  <div class="layer" onclick="toggleLayer(this)">
+    <div class="layer-header">
+      <div class="layer-title">
+        <div class="layer-num">5</div>
+        <span class="layer-name">Monitoring + Scheduling + Event Risk</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span class="layer-badge badge-missing">Mostly Missing</span>
+        <span class="layer-arrow">&#9654;</span>
+      </div>
+    </div>
+    <div class="layer-body">
+      <p style="font-size:13px;color:var(--text-dim);margin-bottom:8px;">
+        牧之林: 4-level health degradation + EOD scheduler + event-driven hedging + decision audit + Dash dashboard
+      </p>
+      <div class="comp-grid">
+        <div class="comp">
+          <div class="comp-status dot-active"></div>
+          <div class="comp-name">Cron Scheduling</div>
+          <div class="comp-file">crontab</div>
+          <div class="comp-desc">Basic cron for daily trading. No health checks or watchdog.</div>
+        </div>
+        <div class="comp">
+          <div class="comp-status dot-code"></div>
+          <div class="comp-name">Dashboard</div>
+          <div class="comp-file">megatrade/deploy/dashboard.py</div>
+          <div class="comp-desc">Terminal dashboard + JSON export. Code exists.</div>
+        </div>
+        <div class="comp">
+          <div class="comp-status dot-code"></div>
+          <div class="comp-name">Scheduler</div>
+          <div class="comp-file">megatrade/deploy/scheduler.py</div>
+          <div class="comp-desc">Daily/intraday scheduling. Code exists.</div>
+        </div>
+        <div class="comp">
+          <div class="comp-status dot-code"></div>
+          <div class="comp-name">Online Updater</div>
+          <div class="comp-file">megatrade/deploy/online_updater.py</div>
+          <div class="comp-desc">Alpha-decay blending + drift detection. Code exists.</div>
+        </div>
+        <div class="comp">
+          <div class="comp-status dot-missing"></div>
+          <div class="comp-name">Event-Driven Risk</div>
+          <div class="comp-file">-</div>
+          <div class="comp-desc">VIX spike / geopolitical triggers + auto hedging. Not built.</div>
+        </div>
+        <div class="comp">
+          <div class="comp-status dot-missing"></div>
+          <div class="comp-name">Health Check (4-level)</div>
+          <div class="comp-file">-</div>
+          <div class="comp-desc">Normal→Warning→Degraded→Shutdown degradation chain. Not built.</div>
+        </div>
+        <div class="comp">
+          <div class="comp-status dot-missing"></div>
+          <div class="comp-name">Decision Audit</div>
+          <div class="comp-file">-</div>
+          <div class="comp-desc">Why did the system make this trade? Audit trail. Not built.</div>
+        </div>
+        <div class="comp">
+          <div class="comp-status dot-missing"></div>
+          <div class="comp-name">MLflow Tracking</div>
+          <div class="comp-file">-</div>
+          <div class="comp-desc">We use TSV files. 牧之林 uses MLflow for 250-symbol experiment tracking.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Data Flow View -->
+<div id="view-flow" class="view">
+  <h3 style="text-align:center;margin-bottom:16px;color:var(--text-dim);">Current Actual Data Flow</h3>
+  <div class="flow">
+    <div class="flow-node fn-active">
+      <div class="flow-node-title">yfinance</div>
+      <div class="flow-node-sub">OHLCV data</div>
+    </div>
+    <div class="flow-arrow">&#8594;</div>
+    <div class="flow-node fn-active">
+      <div class="flow-node-title">strategy.py</div>
+      <div class="flow-node-sub">Backtest engine</div>
+    </div>
+    <div class="flow-arrow">&#8594;</div>
+    <div class="flow-node fn-active">
+      <div class="flow-node-title">run_v5.py</div>
+      <div class="flow-node-sub">AutoResearch harness</div>
+    </div>
+    <div class="flow-arrow">&#8594;</div>
+    <div class="flow-node fn-missing" title="Manual copy-paste">
+      <div class="flow-node-title" style="color:var(--red);">Manual</div>
+      <div class="flow-node-sub">Copy best config</div>
+    </div>
+    <div class="flow-arrow">&#8594;</div>
+    <div class="flow-node fn-active">
+      <div class="flow-node-title">auto_trader.py</div>
+      <div class="flow-node-sub">v8.14 Alpaca</div>
+    </div>
+  </div>
+
+  <h3 style="text-align:center;margin:32px 0 16px;color:var(--text-dim);">Target Flow (牧之林-style)</h3>
+  <div class="flow">
+    <div class="flow-node fn-active">
+      <div class="flow-node-title">7 Data Sources</div>
+      <div class="flow-node-sub">yfinance + AV + GDELT + FRED + ...</div>
+    </div>
+    <div class="flow-arrow">&#8594;</div>
+    <div class="flow-node fn-code">
+      <div class="flow-node-title">171-dim Features</div>
+      <div class="flow-node-sub">pipeline.py</div>
+    </div>
+    <div class="flow-arrow">&#8594;</div>
+    <div class="flow-node fn-code">
+      <div class="flow-node-title">Research Gate</div>
+      <div class="flow-node-sub">5-layer validation</div>
+    </div>
+    <div class="flow-arrow">&#8594;</div>
+    <div class="flow-node fn-code">
+      <div class="flow-node-title">Deploy Gate</div>
+      <div class="flow-node-sub">5 checks → promote</div>
+    </div>
+    <div class="flow-arrow">&#8594;</div>
+    <div class="flow-node fn-partial">
+      <div class="flow-node-title">Runtime Gate</div>
+      <div class="flow-node-sub">HALT + risk control</div>
+    </div>
+    <div class="flow-arrow">&#8594;</div>
+    <div class="flow-node fn-active">
+      <div class="flow-node-title">Executor</div>
+      <div class="flow-node-sub">Alpaca / IBKR</div>
+    </div>
+    <div class="flow-arrow">&#8594;</div>
+    <div class="flow-node fn-missing">
+      <div class="flow-node-title">Monitor</div>
+      <div class="flow-node-sub">Health + audit</div>
+    </div>
+  </div>
+
+  <div style="margin-top:24px;padding:16px;background:var(--card);border:1px solid var(--border);border-radius:8px;">
+    <h4 style="margin-bottom:8px;">Key Gap: The "Manual" Step</h4>
+    <p style="font-size:13px;color:var(--text-dim);line-height:1.6;">
+      Right now, the biggest bottleneck is the manual step between AutoResearch and auto_trader.
+      When autoresearch finds a better config (e.g., OOS Sharpe 2.03), someone must manually
+      extract the parameters and update auto_trader.py. 牧之林 has a Deploy Gate that automates
+      this: if a strategy passes all 5 research gates, it automatically promotes to paper trading.
+    </p>
+  </div>
+</div>
+
+<!-- Mapping View -->
+<div id="view-mapping" class="view">
+  <table class="mapping-table">
+    <thead>
+      <tr>
+        <th>牧之林 Component</th>
+        <th>Our Implementation</th>
+        <th>Status</th>
+        <th>Gap</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>PostgreSQL 18 + BigQuery</td>
+        <td>DuckDB (megatrade code) / yfinance direct</td>
+        <td><span class="status-tag tag-code">Code Only</span></td>
+        <td>No persistent DB in production</td>
+      </tr>
+      <tr>
+        <td>78+41 dim features (119)</td>
+        <td>171 dim features (megatrade code)</td>
+        <td><span class="status-tag tag-code">Code Only</span></td>
+        <td>More dims but unused; actual trading uses ~5 factors</td>
+      </tr>
+      <tr>
+        <td>Research Gate 5-layer</td>
+        <td>AutoResearch v5 (IS/OOS WF)</td>
+        <td><span class="status-tag tag-active">Active</span></td>
+        <td>Only base layer; missing cost_x2, robust, stress, ml_oos</td>
+      </tr>
+      <tr>
+        <td>LightGBM + MetaLabeling</td>
+        <td>megatrade/models/ code</td>
+        <td><span class="status-tag tag-code">Code Only</span></td>
+        <td>ML failed in practice (9 rounds, no stable alpha)</td>
+      </tr>
+      <tr>
+        <td>Alpha 3-Agent Cycle</td>
+        <td>megatrade/alpha/ code</td>
+        <td><span class="status-tag tag-code">Code Only</span></td>
+        <td>Template-based, no Idea/Factor/Eval loop</td>
+      </tr>
+      <tr>
+        <td>Deploy Gate (lifecycle)</td>
+        <td>megatrade/deploy/deploy_gate.py</td>
+        <td><span class="status-tag tag-code">Code Only</span></td>
+        <td>5 checks exist, not connected to autoresearch</td>
+      </tr>
+      <tr>
+        <td>Runtime Gate (8 reject codes)</td>
+        <td>HALT flag in auto_trader.py</td>
+        <td><span class="status-tag tag-review">Needs Review</span></td>
+        <td>Basic 4-condition HALT, no reject codes or scaling</td>
+      </tr>
+      <tr>
+        <td>IBKR ib_insync execution</td>
+        <td>Alpaca REST API</td>
+        <td><span class="status-tag tag-active">Active</span></td>
+        <td>Different broker, simpler API, no TWAP</td>
+      </tr>
+      <tr>
+        <td>Microstructure (Kyle/GM)</td>
+        <td>-</td>
+        <td><span class="status-tag tag-missing">Not Built</span></td>
+        <td>No price impact or adverse selection analysis</td>
+      </tr>
+      <tr>
+        <td>Event-driven risk (VIX/geo)</td>
+        <td>-</td>
+        <td><span class="status-tag tag-missing">Not Built</span></td>
+        <td>No automatic hedging on macro events</td>
+      </tr>
+      <tr>
+        <td>Position reconciler</td>
+        <td>-</td>
+        <td><span class="status-tag tag-missing">Not Built</span></td>
+        <td>No local vs broker drift detection</td>
+      </tr>
+      <tr>
+        <td>4-level health degradation</td>
+        <td>-</td>
+        <td><span class="status-tag tag-missing">Not Built</span></td>
+        <td>No Normal→Warning→Degraded→Shutdown chain</td>
+      </tr>
+      <tr>
+        <td>EOD scheduler + watchdog</td>
+        <td>Basic cron</td>
+        <td><span class="status-tag tag-active">Active</span></td>
+        <td>No DB freshness check, no auto-retry</td>
+      </tr>
+      <tr>
+        <td>Decision audit + Dash dashboard</td>
+        <td>-</td>
+        <td><span class="status-tag tag-missing">Not Built</span></td>
+        <td>No audit trail or visual dashboard</td>
+      </tr>
+      <tr>
+        <td>MLflow (250 symbols)</td>
+        <td>TSV files (results_v4.tsv)</td>
+        <td><span class="status-tag tag-active">Active</span></td>
+        <td>Simple but functional, no hyperparameter tracking</td>
+      </tr>
+      <tr>
+        <td>Online learner (River)</td>
+        <td>megatrade/deploy/online_updater.py</td>
+        <td><span class="status-tag tag-code">Code Only</span></td>
+        <td>Alpha-decay blending code exists, not used</td>
+      </tr>
+      <tr>
+        <td>Physical factors (12 files)</td>
+        <td>megatrade/features/physical_factors.py (8 dim)</td>
+        <td><span class="status-tag tag-code">Code Only</span></td>
+        <td>Simplified version vs 牧之林's 12 physics modules</td>
+      </tr>
+      <tr>
+        <td>Discord bot commands</td>
+        <td>OpenClaw Discord bots</td>
+        <td><span class="status-tag tag-active">Active</span></td>
+        <td>Different architecture (OpenClaw vs native bot)</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- Priority View -->
+<div id="view-priority" class="view">
+  <h3 style="margin-bottom:4px;">Implementation Roadmap</h3>
+  <p style="font-size:13px;color:var(--text-dim);margin-bottom:16px;">Based on impact/effort analysis. Focus on connecting existing code before building new.</p>
+
+  <ul class="priority-list">
+    <li>
+      <div class="priority-rank" style="color:var(--red)">1</div>
+      <div class="priority-content">
+        <div class="priority-title">Connect Research Gate to AutoResearch</div>
+        <div class="priority-desc">
+          <strong>Impact: HIGH</strong> | MegaTrade gate.py already has 5-layer logic. Wire it so autoresearch results
+          automatically pass through cost_x2 + robust + stress + ml_oos gates. This is the single highest-value integration.
+        </div>
+      </div>
+    </li>
+    <li>
+      <div class="priority-rank" style="color:var(--red)">2</div>
+      <div class="priority-content">
+        <div class="priority-title">Connect Deploy Gate to auto_trader.py</div>
+        <div class="priority-desc">
+          <strong>Impact: HIGH</strong> | deploy_gate.py has 5 validation checks. If a config passes Research Gate + Deploy Gate,
+          auto-update auto_trader.py parameters. Eliminates the "Manual" bottleneck.
+        </div>
+      </div>
+    </li>
+    <li>
+      <div class="priority-rank" style="color:var(--yellow)">3</div>
+      <div class="priority-content">
+        <div class="priority-title">Review & Activate Runtime Gate</div>
+        <div class="priority-desc">
+          <strong>Impact: MEDIUM</strong> | HALT logic was added but also changed trading params (v7.1→v8.14 conflict).
+          Need selective revert, then activate the 4-condition monitoring.
+        </div>
+      </div>
+    </li>
+    <li>
+      <div class="priority-rank" style="color:var(--yellow)">4</div>
+      <div class="priority-content">
+        <div class="priority-title">Event-Driven Risk Control</div>
+        <div class="priority-desc">
+          <strong>Impact: MEDIUM</strong> | Monitor VIX, oil, macro indicators. Auto-suggest hedging when thresholds breach.
+          牧之林's 3-button Discord UI (Execute/Pause/Cancel) is a good reference.
+        </div>
+      </div>
+    </li>
+    <li>
+      <div class="priority-rank" style="color:var(--green)">5</div>
+      <div class="priority-content">
+        <div class="priority-title">Live Dashboard</div>
+        <div class="priority-desc">
+          <strong>Impact: LOW-MED</strong> | Real-time view of positions, PnL, system health, recent experiments.
+          MegaTrade dashboard.py exists. Could also build as web dashboard (Dash/Streamlit).
+        </div>
+      </div>
+    </li>
+    <li>
+      <div class="priority-rank" style="color:var(--green)">6</div>
+      <div class="priority-content">
+        <div class="priority-title">Position Reconciliation</div>
+        <div class="priority-desc">
+          <strong>Impact: LOW</strong> | Compare local state vs Alpaca positions. Detect drift. Important for production
+          but less urgent for paper trading phase.
+        </div>
+      </div>
+    </li>
+  </ul>
+
+  <div style="margin-top:24px;padding:16px;background:var(--card);border:1px solid var(--border);border-radius:8px;">
+    <h4 style="margin-bottom:8px;">Core Principle</h4>
+    <p style="font-size:13px;color:var(--text-dim);line-height:1.6;">
+      <strong>Connect before build.</strong> We have 14 components as code that aren't used.
+      The highest ROI is wiring them into the actual pipeline, not building new things.
+      Priority #1 and #2 alone would close the biggest gap between our system and 牧之林.
+    </p>
+  </div>
+</div>
+
+</div><!-- arch-container -->
+
+<div style="text-align:center;margin-top:32px;padding:16px;color:var(--text-dim);font-size:12px;">
+  Quant Trading System Dashboard | Reference: 牧之林/丹丹交易團隊 | Last updated: 2026-03-29
+</div>
+
+<script>
+function toggleLayer(el) {
+  // Don't toggle if clicking inside the body
+  if (event.target.closest('.layer-body')) return;
+  el.classList.toggle('open');
+}
+
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('view-' + name).classList.add('active');
+}
+</script>
+</body>
+</html>
