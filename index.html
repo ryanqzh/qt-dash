@@ -1280,7 +1280,7 @@ body::after {
           <div class="comp-item s-code"><div class="comp-dot blue"></div><div class="comp-name">MetaLabeling</div><div class="comp-file">megatrade/models/meta_labeling.py</div><div class="comp-desc">Dual filter (intent cost + 26-dim features). Code exists.</div></div>
           <div class="comp-item s-code"><div class="comp-dot blue"></div><div class="comp-name">Alpha Generator</div><div class="comp-file">megatrade/alpha/generator.py</div><div class="comp-desc">10-template alpha generation with AST depth constraints. Code exists.</div></div>
           <div class="comp-item s-code"><div class="comp-dot blue"></div><div class="comp-name">Stress Test</div><div class="comp-file">megatrade/research/stress_plan.py</div><div class="comp-desc">5 stress scenarios. Code exists.</div></div>
-          <div class="comp-item s-active"><div class="comp-dot green"></div><div class="comp-name">Validation Gate</div><div class="comp-file">validation_gate.py</div><div class="comp-desc">Independent validation: cost_x2 + 3 crisis stress tests. Between research and deploy.</div></div>
+          <div class="comp-item s-active"><div class="comp-dot green"></div><div class="comp-name">Validation Gate (4-Layer)</div><div class="comp-file">validation_gate.py</div><div class="comp-desc">4-gate sequential: cost_x2 &rarr; robust (bootstrap) &rarr; stress (3 crisis) &rarr; ml_oos (IS/OOS ratio). All 4 PASS.</div></div>
           <div class="comp-item s-missing"><div class="comp-dot red"></div><div class="comp-name">vectorbt Pre-scan</div><div class="comp-file">-</div><div class="comp-desc">Reference uses vectorbt for fast signal pre-screening before full backtest.</div></div>
         </div>
       </div>
@@ -1389,7 +1389,7 @@ body::after {
         <div class="pipe-node n-active">
           <div class="pipe-node-status" style="background:var(--green);box-shadow:0 0 6px rgba(0,230,118,0.4)"></div>
           <div class="pipe-node-name">Validation</div>
-          <div class="pipe-node-sub">cost_x2 + stress test</div>
+          <div class="pipe-node-sub">4-gate research gate</div>
           <div class="pipe-node-time">Last: 2026-03-29 08:15</div>
         </div>
         <div class="pipe-arrow"><svg viewBox="0 0 36 12"><line class="arrow-line" x1="0" y1="6" x2="30" y2="6"/><polygon class="arrow-head" points="28,2 36,6 28,10"/><circle class="arrow-pulse" cx="18" cy="6" r="2"/></svg></div>
