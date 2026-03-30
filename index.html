@@ -1142,10 +1142,10 @@ body::after {
       </div>
     </div>
     <div class="status-cell">
-      <div class="status-indicator yellow"></div>
+      <div class="status-indicator green"></div>
       <div class="status-info">
         <div class="status-label">System Health</div>
-        <div class="status-value" style="color:var(--yellow)">NOMINAL (no watchdog)</div>
+        <div class="status-value" style="color:var(--green)">NORMAL (watchdog active)</div>
       </div>
     </div>
   </div>
@@ -1198,14 +1198,14 @@ body::after {
   <div class="coverage-bar-wrap">
     <div class="coverage-label">System Coverage</div>
     <div class="coverage-track">
-      <div class="cov-seg active" style="width:0" data-width="20"></div>
-      <div class="cov-seg code" style="width:0" data-width="47"></div>
-      <div class="cov-seg missing" style="width:0" data-width="33"></div>
+      <div class="cov-seg active" style="width:0" data-width="40"></div>
+      <div class="cov-seg code" style="width:0" data-width="33"></div>
+      <div class="cov-seg missing" style="width:0" data-width="27"></div>
     </div>
     <div class="coverage-stats">
-      <div class="cov-stat"><div class="cov-dot" style="background:var(--green)"></div> 6 Active</div>
-      <div class="cov-stat"><div class="cov-dot" style="background:var(--blue)"></div> 14 Code</div>
-      <div class="cov-stat"><div class="cov-dot" style="background:var(--red);opacity:0.5"></div> 10 Missing</div>
+      <div class="cov-stat"><div class="cov-dot" style="background:var(--green)"></div> 12 Active</div>
+      <div class="cov-stat"><div class="cov-dot" style="background:var(--blue)"></div> 10 Code</div>
+      <div class="cov-stat"><div class="cov-dot" style="background:var(--red);opacity:0.5"></div> 8 Missing</div>
     </div>
   </div>
 </div>
@@ -1225,10 +1225,10 @@ body::after {
 <div class="main-content">
   <div class="tabs-container animate-in d5">
     <button class="tab-btn active" data-tab="arch">Architecture<span class="tab-count">5</span></button>
-    <button class="tab-btn" data-tab="pipeline">Pipeline<span class="tab-count">5</span></button>
+    <button class="tab-btn" data-tab="pipeline">Pipeline<span class="tab-count">7</span></button>
     <button class="tab-btn" data-tab="experiments">Experiments<span class="tab-count">10</span></button>
     <button class="tab-btn" data-tab="mapping">Mapping<span class="tab-count">17</span></button>
-    <button class="tab-btn" data-tab="priority">Priority<span class="tab-count">6</span></button>
+    <button class="tab-btn" data-tab="priority">Priority<span class="tab-count">9</span></button>
   </div>
 
   <!-- ======= ARCHITECTURE TAB ======= -->
@@ -1280,6 +1280,7 @@ body::after {
           <div class="comp-item s-code"><div class="comp-dot blue"></div><div class="comp-name">MetaLabeling</div><div class="comp-file">megatrade/models/meta_labeling.py</div><div class="comp-desc">Dual filter (intent cost + 26-dim features). Code exists.</div></div>
           <div class="comp-item s-code"><div class="comp-dot blue"></div><div class="comp-name">Alpha Generator</div><div class="comp-file">megatrade/alpha/generator.py</div><div class="comp-desc">10-template alpha generation with AST depth constraints. Code exists.</div></div>
           <div class="comp-item s-code"><div class="comp-dot blue"></div><div class="comp-name">Stress Test</div><div class="comp-file">megatrade/research/stress_plan.py</div><div class="comp-desc">5 stress scenarios. Code exists.</div></div>
+          <div class="comp-item s-active"><div class="comp-dot green"></div><div class="comp-name">Validation Gate</div><div class="comp-file">validation_gate.py</div><div class="comp-desc">Independent validation: cost_x2 + 3 crisis stress tests. Between research and deploy.</div></div>
           <div class="comp-item s-missing"><div class="comp-dot red"></div><div class="comp-name">vectorbt Pre-scan</div><div class="comp-file">-</div><div class="comp-desc">Reference uses vectorbt for fast signal pre-screening before full backtest.</div></div>
         </div>
       </div>
@@ -1293,14 +1294,14 @@ body::after {
           <div class="layer-label">Deploy Gate</div>
         </div>
         <div class="layer-right">
-          <span class="badge badge-code">Code Only</span>
+          <span class="badge badge-active">Active</span>
           <span class="layer-chevron">&#9654;</span>
         </div>
       </div>
       <div class="layer-body">
         <div class="layer-desc">Reference: Account profiling + root cause analysis + lifecycle promotion (BACKTESTED > RESEARCH_PASSED > DEPLOYABLE)</div>
         <div class="comp-grid">
-          <div class="comp-item s-code"><div class="comp-dot blue"></div><div class="comp-name">Deploy Gate</div><div class="comp-file">megatrade/deploy/deploy_gate.py</div><div class="comp-desc">5 validation checks before auto_trader update. Code exists, not connected.</div></div>
+          <div class="comp-item s-active"><div class="comp-dot green"></div><div class="comp-name">Deploy Gate</div><div class="comp-file">deploy_gate.py</div><div class="comp-desc">5 validation checks + FORBIDDEN_PARAMS(LEVERAGE) + auto-backup. Active.</div></div>
           <div class="comp-item s-code"><div class="comp-dot blue"></div><div class="comp-name">Account Profile</div><div class="comp-file">megatrade/research/account_profile.py</div><div class="comp-desc">Account sizing + position allocation. Code exists.</div></div>
           <div class="comp-item s-missing"><div class="comp-dot red"></div><div class="comp-name">Lifecycle State Machine</div><div class="comp-file">-</div><div class="comp-desc">VALIDATED > PAPER_LIVE > LIMITED_CAPITAL > ACTIVE. Not built.</div></div>
           <div class="comp-item s-missing"><div class="comp-dot red"></div><div class="comp-name">Root Cause Analysis</div><div class="comp-file">-</div><div class="comp-desc">dispatch_root_cause_codes for deployment failures. Not built.</div></div>
@@ -1316,7 +1317,7 @@ body::after {
           <div class="layer-label">Runtime Gate + Execution</div>
         </div>
         <div class="layer-right">
-          <span class="badge badge-partial">Needs Review</span>
+          <span class="badge badge-active">Partially Active</span>
           <span class="layer-chevron">&#9654;</span>
         </div>
       </div>
@@ -1324,7 +1325,8 @@ body::after {
         <div class="layer-desc">Reference: Microstructure analysis + 4-dim position scaling + 8 reject codes + IBKR execution + position reconciliation</div>
         <div class="comp-grid">
           <div class="comp-item s-active"><div class="comp-dot green"></div><div class="comp-name">auto_trader.py v8.14</div><div class="comp-file">auto_trader.py</div><div class="comp-desc">Triple Signal + Enhanced Hedge. Alpaca paper trading. Main execution engine.</div></div>
-          <div class="comp-item s-review"><div class="comp-dot yellow"></div><div class="comp-name">Runtime Gate (HALT)</div><div class="comp-file">auto_trader.py (embedded)</div><div class="comp-desc">4 HALT conditions: 5-day loss, 15% DD, Sharpe &lt;-0.5, 5% single-day loss.</div></div>
+          <div class="comp-item s-active"><div class="comp-dot green"></div><div class="comp-name">Runtime Gate (HALT)</div><div class="comp-file">auto_trader.py + runtime_monitor.py</div><div class="comp-desc">Embedded in auto_trader.py + standalone runtime_monitor.py. HALT_FLAG integration.</div></div>
+          <div class="comp-item s-active"><div class="comp-dot green"></div><div class="comp-name">Runtime Monitor</div><div class="comp-file">runtime_monitor.py</div><div class="comp-desc">4 HALT conditions + WARN thresholds. Scheduled hourly via LaunchAgent.</div></div>
           <div class="comp-item s-active"><div class="comp-dot green"></div><div class="comp-name">Alpaca Client</div><div class="comp-file">alpaca_client.py</div><div class="comp-desc">REST API execution + portfolio history. Active.</div></div>
           <div class="comp-item s-code"><div class="comp-dot blue"></div><div class="comp-name">IBKR Executor</div><div class="comp-file">megatrade/deploy/executor.py</div><div class="comp-desc">IBKRExecutor + PaperExecutor + TWAP. Code exists.</div></div>
           <div class="comp-item s-code"><div class="comp-dot blue"></div><div class="comp-name">Risk Manager</div><div class="comp-file">megatrade/deploy/risk_manager.py</div><div class="comp-desc">Pre-trade risk checks + kill switch. Code exists.</div></div>
@@ -1343,7 +1345,7 @@ body::after {
           <div class="layer-label">Monitoring + Scheduling + Event Risk</div>
         </div>
         <div class="layer-right">
-          <span class="badge badge-missing">Mostly Missing</span>
+          <span class="badge badge-partial">Partially Active</span>
           <span class="layer-chevron">&#9654;</span>
         </div>
       </div>
@@ -1355,7 +1357,8 @@ body::after {
           <div class="comp-item s-code"><div class="comp-dot blue"></div><div class="comp-name">Scheduler</div><div class="comp-file">megatrade/deploy/scheduler.py</div><div class="comp-desc">Daily/intraday scheduling. Code exists.</div></div>
           <div class="comp-item s-code"><div class="comp-dot blue"></div><div class="comp-name">Online Updater</div><div class="comp-file">megatrade/deploy/online_updater.py</div><div class="comp-desc">Alpha-decay blending + drift detection. Code exists.</div></div>
           <div class="comp-item s-missing"><div class="comp-dot red"></div><div class="comp-name">Event-Driven Risk</div><div class="comp-file">-</div><div class="comp-desc">VIX spike / geopolitical triggers + auto hedging. Not built.</div></div>
-          <div class="comp-item s-missing"><div class="comp-dot red"></div><div class="comp-name">Health Check (4-level)</div><div class="comp-file">-</div><div class="comp-desc">Normal > Warning > Degraded > Shutdown degradation chain. Not built.</div></div>
+          <div class="comp-item s-active"><div class="comp-dot green"></div><div class="comp-name">Health Check (4-level)</div><div class="comp-file">health_check.py</div><div class="comp-desc">6 checks, 4 levels (NORMAL/WARNING/DEGRADED/SHUTDOWN). Active.</div></div>
+          <div class="comp-item s-active"><div class="comp-dot green"></div><div class="comp-name">Pipeline Orchestrator</div><div class="comp-file">pipeline.py</div><div class="comp-desc">Unified entry: research &rarr; validation &rarr; deploy. HALT_FLAG checks between stages.</div></div>
           <div class="comp-item s-missing"><div class="comp-dot red"></div><div class="comp-name">Decision Audit</div><div class="comp-file">-</div><div class="comp-desc">Why did the system make this trade? Audit trail. Not built.</div></div>
           <div class="comp-item s-missing"><div class="comp-dot red"></div><div class="comp-name">MLflow Tracking</div><div class="comp-file">-</div><div class="comp-desc">We use TSV files. Reference uses MLflow for 250-symbol experiment tracking.</div></div>
         </div>
@@ -1386,15 +1389,15 @@ body::after {
         <div class="pipe-node n-active">
           <div class="pipe-node-status" style="background:var(--green);box-shadow:0 0 6px rgba(0,230,118,0.4)"></div>
           <div class="pipe-node-name">Validation</div>
-          <div class="pipe-node-sub">IS/OOS walk-forward</div>
+          <div class="pipe-node-sub">cost_x2 + stress test</div>
           <div class="pipe-node-time">Last: 2026-03-29 08:15</div>
         </div>
-        <div class="pipe-arrow"><svg viewBox="0 0 36 12"><line class="arrow-line" x1="0" y1="6" x2="30" y2="6" stroke-dasharray="4,3"/><polygon class="arrow-head" points="28,2 36,6 28,10" style="fill:var(--red);opacity:0.5"/></svg></div>
-        <div class="pipe-node n-missing">
-          <div class="pipe-node-status" style="background:var(--red)"></div>
-          <div class="pipe-node-name" style="color:var(--red)">Deploy Gate</div>
-          <div class="pipe-node-sub">Manual copy-paste</div>
-          <div class="pipe-node-time" style="color:var(--red)">BOTTLENECK</div>
+        <div class="pipe-arrow"><svg viewBox="0 0 36 12"><line class="arrow-line" x1="0" y1="6" x2="30" y2="6"/><polygon class="arrow-head" points="28,2 36,6 28,10"/><circle class="arrow-pulse" cx="18" cy="6" r="2"/></svg></div>
+        <div class="pipe-node n-active">
+          <div class="pipe-node-status" style="background:var(--green);box-shadow:0 0 6px rgba(0,230,118,0.4)"></div>
+          <div class="pipe-node-name">Deploy Gate</div>
+          <div class="pipe-node-sub">5-gate validation</div>
+          <div class="pipe-node-time">Last: 2026-03-29</div>
         </div>
         <div class="pipe-arrow"><svg viewBox="0 0 36 12"><line class="arrow-line" x1="0" y1="6" x2="30" y2="6"/><polygon class="arrow-head" points="28,2 36,6 28,10"/></svg></div>
         <div class="pipe-node n-active">
@@ -1402,6 +1405,20 @@ body::after {
           <div class="pipe-node-name">auto_trader</div>
           <div class="pipe-node-sub">v8.14 Alpaca</div>
           <div class="pipe-node-time">Last: 2026-03-28 16:00</div>
+        </div>
+        <div class="pipe-arrow"><svg viewBox="0 0 36 12"><line class="arrow-line" x1="0" y1="6" x2="30" y2="6"/><polygon class="arrow-head" points="28,2 36,6 28,10"/><circle class="arrow-pulse" cx="18" cy="6" r="2"/></svg></div>
+        <div class="pipe-node n-active">
+          <div class="pipe-node-status" style="background:var(--green);box-shadow:0 0 6px rgba(0,230,118,0.4)"></div>
+          <div class="pipe-node-name">Runtime Monitor</div>
+          <div class="pipe-node-sub">HALT watchdog</div>
+          <div class="pipe-node-time">Hourly</div>
+        </div>
+        <div class="pipe-arrow"><svg viewBox="0 0 36 12"><line class="arrow-line" x1="0" y1="6" x2="30" y2="6"/><polygon class="arrow-head" points="28,2 36,6 28,10"/><circle class="arrow-pulse" cx="18" cy="6" r="2"/></svg></div>
+        <div class="pipe-node n-active">
+          <div class="pipe-node-status" style="background:var(--green);box-shadow:0 0 6px rgba(0,230,118,0.4)"></div>
+          <div class="pipe-node-name">Health Check</div>
+          <div class="pipe-node-sub">6 checks 4 levels</div>
+          <div class="pipe-node-time">Daily</div>
         </div>
       </div>
     </div>
@@ -1448,9 +1465,9 @@ body::after {
       </div>
     </div>
 
-    <div class="info-box">
-      <h4>Key Gap: The "Manual" Step</h4>
-      <p>The biggest bottleneck is the manual step between AutoResearch and auto_trader. When autoresearch finds a better config (e.g., OOS Sharpe 2.03), someone must manually extract the parameters and update auto_trader.py. The reference has a Deploy Gate that automates this: if a strategy passes all 5 research gates, it automatically promotes to paper trading.</p>
+    <div class="info-box" style="border-left-color:var(--green);">
+      <h4>Pipeline Status: Connected</h4>
+      <p>Deploy Gate is now active with 5 validation checks + FORBIDDEN_PARAMS(LEVERAGE) + auto-backup. Runtime Monitor runs hourly as HALT watchdog. Health Check runs daily with 6 checks across 4 severity levels. The full pipeline from research to monitoring is connected.</p>
     </div>
   </div>
 
@@ -1498,13 +1515,13 @@ body::after {
           <tr><td>Research Gate 5-layer</td><td>AutoResearch v5 (IS/OOS WF)</td><td><span class="tag tag-active">Active</span></td><td>Only base layer; missing cost_x2, robust, stress, ml_oos</td></tr>
           <tr><td>LightGBM + MetaLabeling</td><td>megatrade/models/ code</td><td><span class="tag tag-code">Code</span></td><td>ML failed in practice (9 rounds, no stable alpha)</td></tr>
           <tr><td>Alpha 3-Agent Cycle</td><td>megatrade/alpha/ code</td><td><span class="tag tag-code">Code</span></td><td>Template-based, no Idea/Factor/Eval loop</td></tr>
-          <tr><td>Deploy Gate (lifecycle)</td><td>megatrade/deploy/deploy_gate.py</td><td><span class="tag tag-code">Code</span></td><td>5 checks exist, not connected to autoresearch</td></tr>
-          <tr><td>Runtime Gate (8 reject)</td><td>HALT flag in auto_trader.py</td><td><span class="tag tag-review">Review</span></td><td>Basic 4-condition HALT, no reject codes or scaling</td></tr>
+          <tr><td>Deploy Gate (lifecycle)</td><td>deploy_gate.py</td><td><span class="tag tag-active">Active</span></td><td>5 checks + FORBIDDEN_PARAMS + auto-backup. Active.</td></tr>
+          <tr><td>Runtime Gate (8 reject)</td><td>auto_trader.py + runtime_monitor.py</td><td><span class="tag tag-active">Active</span></td><td>4 HALT conditions + WARN thresholds, hourly monitoring</td></tr>
           <tr><td>IBKR ib_insync execution</td><td>Alpaca REST API</td><td><span class="tag tag-active">Active</span></td><td>Different broker, simpler API, no TWAP</td></tr>
           <tr><td>Microstructure (Kyle/GM)</td><td>-</td><td><span class="tag tag-missing">Missing</span></td><td>No price impact or adverse selection analysis</td></tr>
           <tr><td>Event-driven risk</td><td>-</td><td><span class="tag tag-missing">Missing</span></td><td>No automatic hedging on macro events</td></tr>
           <tr><td>Position reconciler</td><td>-</td><td><span class="tag tag-missing">Missing</span></td><td>No local vs broker drift detection</td></tr>
-          <tr><td>4-level health degradation</td><td>-</td><td><span class="tag tag-missing">Missing</span></td><td>No Normal > Warning > Degraded > Shutdown</td></tr>
+          <tr><td>4-level health degradation</td><td>health_check.py</td><td><span class="tag tag-active">Active</span></td><td>6 checks, 4 levels (NORMAL/WARNING/DEGRADED/SHUTDOWN)</td></tr>
           <tr><td>EOD scheduler + watchdog</td><td>Basic cron</td><td><span class="tag tag-active">Active</span></td><td>No DB freshness check, no auto-retry</td></tr>
           <tr><td>Decision audit + Dash</td><td>-</td><td><span class="tag tag-missing">Missing</span></td><td>No audit trail or visual dashboard</td></tr>
           <tr><td>MLflow (250 symbols)</td><td>TSV files (results_v4.tsv)</td><td><span class="tag tag-active">Active</span></td><td>Simple but functional</td></tr>
@@ -1522,48 +1539,75 @@ body::after {
       <div style="font-size:12px;color:var(--text-muted);">Based on impact/effort analysis. Focus on connecting existing code before building new.</div>
     </div>
 
+    <div class="priority-item" style="border-left:3px solid var(--green);opacity:0.7">
+      <div class="pri-rank" style="color:var(--green)">&#10003;</div>
+      <div class="pri-body">
+        <div class="pri-title" style="text-decoration:line-through;color:var(--text-dim)">Connect Deploy Gate to auto_trader.py</div>
+        <div class="pri-impact" style="color:var(--green)">Done</div>
+        <div class="pri-desc">deploy_gate.py active with 5 validation checks + FORBIDDEN_PARAMS(LEVERAGE) + auto-backup.</div>
+      </div>
+    </div>
+
+    <div class="priority-item" style="border-left:3px solid var(--green);opacity:0.7">
+      <div class="pri-rank" style="color:var(--green)">&#10003;</div>
+      <div class="pri-body">
+        <div class="pri-title" style="text-decoration:line-through;color:var(--text-dim)">Health Check + Runtime Monitor</div>
+        <div class="pri-impact" style="color:var(--green)">Done</div>
+        <div class="pri-desc">health_check.py (6 checks, 4 levels) + runtime_monitor.py (hourly HALT watchdog) both active.</div>
+      </div>
+    </div>
+
+    <div class="priority-item" style="border-left:3px solid var(--green);opacity:0.7">
+      <div class="pri-rank" style="color:var(--green)">&#10003;</div>
+      <div class="pri-body">
+        <div class="pri-title" style="text-decoration:line-through;color:var(--text-dim)">Pipeline Orchestrator</div>
+        <div class="pri-impact" style="color:var(--green)">Done</div>
+        <div class="pri-desc">pipeline.py: unified research &rarr; validation &rarr; deploy flow with HALT_FLAG checks between stages.</div>
+      </div>
+    </div>
+
     <div class="priority-item">
       <div class="pri-rank" style="color:var(--red)">1</div>
       <div class="pri-body">
-        <div class="pri-title">Connect Research Gate to AutoResearch</div>
+        <div class="pri-title">Fix Survivorship Bias</div>
         <div class="pri-impact" style="color:var(--red)">Impact: Critical</div>
-        <div class="pri-desc">MegaTrade gate.py already has 5-layer logic. Wire it so autoresearch results automatically pass through cost_x2 + robust + stress + ml_oos gates. Single highest-value integration.</div>
+        <div class="pri-desc">Current universe uses today's S&P 500 constituents for historical backtests. Need delisted/removed tickers to eliminate survivorship bias and get realistic OOS metrics.</div>
       </div>
     </div>
 
     <div class="priority-item">
       <div class="pri-rank" style="color:var(--red)">2</div>
       <div class="pri-body">
-        <div class="pri-title">Connect Deploy Gate to auto_trader.py</div>
+        <div class="pri-title">ML Upgrade Momentum</div>
         <div class="pri-impact" style="color:var(--red)">Impact: Critical</div>
-        <div class="pri-desc">deploy_gate.py has 5 validation checks. If a config passes Research Gate + Deploy Gate, auto-update auto_trader.py parameters. Eliminates the "Manual" bottleneck.</div>
+        <div class="pri-desc">Direction 1 from MegaTrade next steps. Use LightGBM/XGBoost to enhance momentum signal with 171-dim features. Walk-forward CV to avoid lookahead.</div>
       </div>
     </div>
 
     <div class="priority-item">
       <div class="pri-rank" style="color:var(--yellow)">3</div>
       <div class="pri-body">
-        <div class="pri-title">Review & Activate Runtime Gate</div>
+        <div class="pri-title">Connect Research Gate to AutoResearch</div>
         <div class="pri-impact" style="color:var(--yellow)">Impact: Medium</div>
-        <div class="pri-desc">HALT logic was added but also changed trading params (v7.1 > v8.14 conflict). Need selective revert, then activate the 4-condition monitoring.</div>
+        <div class="pri-desc">MegaTrade gate.py has 5-layer logic. Wire it so autoresearch results automatically pass through cost_x2 + robust + stress + ml_oos gates.</div>
       </div>
     </div>
 
     <div class="priority-item">
       <div class="pri-rank" style="color:var(--yellow)">4</div>
       <div class="pri-body">
-        <div class="pri-title">Event-Driven Risk Control</div>
+        <div class="pri-title">Intraday Strategy VWAP</div>
         <div class="pri-impact" style="color:var(--yellow)">Impact: Medium</div>
-        <div class="pri-desc">Monitor VIX, oil, macro indicators. Auto-suggest hedging when thresholds breach. Reference's 3-button Discord UI (Execute/Pause/Cancel) is a good model.</div>
+        <div class="pri-desc">Develop VWAP-based intraday execution strategy. Reduce market impact on entries/exits, especially for larger position changes.</div>
       </div>
     </div>
 
     <div class="priority-item">
-      <div class="pri-rank" style="color:var(--green)">5</div>
+      <div class="pri-rank" style="color:var(--yellow)">5</div>
       <div class="pri-body">
-        <div class="pri-title">Live Dashboard</div>
-        <div class="pri-impact" style="color:var(--green)">Impact: Low-Med</div>
-        <div class="pri-desc">Real-time view of positions, PnL, system health, recent experiments. MegaTrade dashboard.py exists. Could also build as web dashboard.</div>
+        <div class="pri-title">Event-Driven Risk Control</div>
+        <div class="pri-impact" style="color:var(--yellow)">Impact: Medium</div>
+        <div class="pri-desc">Monitor VIX, oil, macro indicators. Auto-suggest hedging when thresholds breach. Reference's 3-button Discord UI (Execute/Pause/Cancel) is a good model.</div>
       </div>
     </div>
 
@@ -1578,7 +1622,7 @@ body::after {
 
     <div class="info-box" style="border-left-color:var(--green);">
       <h4>Core Principle</h4>
-      <p><strong>Connect before build.</strong> We have 14 components as code that aren't used. The highest ROI is wiring them into the actual pipeline, not building new things. Priority #1 and #2 alone would close the biggest gap.</p>
+      <p><strong>Connect before build.</strong> We have 10 components as code that aren't used. Deploy Gate, Health Check, Runtime Monitor, and Pipeline are now active. Next focus: fix data quality (survivorship bias) and upgrade signal (ML momentum).</p>
     </div>
   </div>
 
