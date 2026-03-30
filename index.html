@@ -1156,32 +1156,32 @@ body::after {
   <div class="metrics-grid">
     <div class="metric-card">
       <div class="metric-label">OOS Sharpe</div>
-      <div class="metric-value green glow-green" data-count="2.12" data-decimals="2">0</div>
+      <div class="metric-value green glow-green" data-count="2.13" data-decimals="2">0</div>
       <div class="metric-bar"><div class="metric-bar-fill green" data-width="85"></div></div>
-      <div class="metric-sub">Target: 2.50</div>
+      <div class="metric-sub">v9.18 | Target: 2.50</div>
     </div>
     <div class="metric-card">
       <div class="metric-label">CAGR</div>
-      <div class="metric-value green glow-green" data-count="25.3" data-decimals="1" data-suffix="%">0</div>
-      <div class="metric-bar"><div class="metric-bar-fill green" data-width="73"></div></div>
+      <div class="metric-value green glow-green" data-count="23.0" data-decimals="1" data-suffix="%">0</div>
+      <div class="metric-bar"><div class="metric-bar-fill green" data-width="66"></div></div>
       <div class="metric-sub">Annualized return</div>
     </div>
     <div class="metric-card">
       <div class="metric-label">Max Drawdown</div>
-      <div class="metric-value red" data-count="-5.4" data-decimals="1" data-suffix="%">0</div>
-      <div class="metric-bar"><div class="metric-bar-fill red" data-width="22"></div></div>
+      <div class="metric-value red" data-count="-5.1" data-decimals="1" data-suffix="%">0</div>
+      <div class="metric-bar"><div class="metric-bar-fill red" data-width="20"></div></div>
       <div class="metric-sub">Peak-to-trough</div>
     </div>
     <div class="metric-card">
       <div class="metric-label">Calmar</div>
-      <div class="metric-value blue glow-blue" data-count="4.72" data-decimals="2">0</div>
-      <div class="metric-bar"><div class="metric-bar-fill blue" data-width="94"></div></div>
+      <div class="metric-value blue glow-blue" data-count="4.51" data-decimals="2">0</div>
+      <div class="metric-bar"><div class="metric-bar-fill blue" data-width="90"></div></div>
       <div class="metric-sub">CAGR / Max DD</div>
     </div>
     <div class="metric-card">
       <div class="metric-label">Sortino</div>
-      <div class="metric-value blue" data-count="3.21" data-decimals="2">0</div>
-      <div class="metric-bar"><div class="metric-bar-fill blue" data-width="80"></div></div>
+      <div class="metric-value blue" data-count="3.18" data-decimals="2">0</div>
+      <div class="metric-bar"><div class="metric-bar-fill blue" data-width="79"></div></div>
       <div class="metric-sub">Downside-adjusted</div>
     </div>
     <div class="metric-card">
@@ -1228,7 +1228,7 @@ body::after {
     <button class="tab-btn" data-tab="pipeline">Pipeline<span class="tab-count">7</span></button>
     <button class="tab-btn" data-tab="experiments">Experiments<span class="tab-count">10</span></button>
     <button class="tab-btn" data-tab="mapping">Mapping<span class="tab-count">17</span></button>
-    <button class="tab-btn" data-tab="priority">Priority<span class="tab-count">9</span></button>
+    <button class="tab-btn" data-tab="priority">Priority<span class="tab-count">10</span></button>
   </div>
 
   <!-- ======= ARCHITECTURE TAB ======= -->
@@ -1458,9 +1458,10 @@ body::after {
           <div class="pipe-node-sub">Alpaca / IBKR</div>
         </div>
         <div class="pipe-arrow"><svg viewBox="0 0 36 12"><line class="arrow-line" x1="0" y1="6" x2="30" y2="6"/><polygon class="arrow-head" points="28,2 36,6 28,10"/></svg></div>
-        <div class="pipe-node n-missing">
+        <div class="pipe-node n-active">
+          <div class="pipe-node-status" style="background:var(--green);box-shadow:0 0 6px rgba(0,230,118,0.4)"></div>
           <div class="pipe-node-name">Monitor</div>
-          <div class="pipe-node-sub">Health + audit</div>
+          <div class="pipe-node-sub">Health + HALT</div>
         </div>
       </div>
     </div>
@@ -1566,63 +1567,76 @@ body::after {
       </div>
     </div>
 
+    <div style="font-family:var(--sans);font-size:13px;font-weight:600;color:var(--cyan);margin:12px 0 8px;letter-spacing:0.5px;">BREAKTHROUGH DIRECTIONS</div>
+
+    <div class="priority-item" style="border-left:3px solid var(--cyan)">
+      <div class="pri-rank" style="color:var(--cyan)">B1</div>
+      <div class="pri-body">
+        <div class="pri-title">External Data Sources</div>
+        <div class="pri-impact" style="color:var(--red)">Impact: Critical &mdash; breaks price/volume ceiling</div>
+        <div class="pri-desc">Earnings revisions (SEC EDGAR / Alpha Vantage), short interest (FINRA biweekly), options flow anomalies (CBOE / IBKR). Adds orthogonal alpha signals beyond pure momentum.</div>
+      </div>
+    </div>
+
+    <div class="priority-item" style="border-left:3px solid var(--cyan)">
+      <div class="pri-rank" style="color:var(--cyan)">B2</div>
+      <div class="pri-body">
+        <div class="pri-title">ML Overlay on v9 Baseline</div>
+        <div class="pri-impact" style="color:var(--red)">Impact: Critical &mdash; +3-5% win rate</div>
+        <div class="pri-desc">LightGBM MetaLabeling on v9.18 (OOS Sharpe 2.13). Rule signal first, ML decides execution. MegaTrade models/ code exists. Walk-forward CV to avoid lookahead.</div>
+      </div>
+    </div>
+
+    <div class="priority-item" style="border-left:3px solid var(--cyan)">
+      <div class="pri-rank" style="color:var(--cyan)">B3</div>
+      <div class="pri-body">
+        <div class="pri-title">Intraday VWAP Reversion</div>
+        <div class="pri-impact" style="color:var(--yellow)">Impact: High &mdash; orthogonal to daily momentum</div>
+        <div class="pri-desc">5min/15min VWAP mean-reversion. Phase 0 research done, Alpaca 15min data downloaded. Low correlation with daily momentum = diversification. New execution engine needed.</div>
+      </div>
+    </div>
+
+    <div style="font-family:var(--sans);font-size:13px;font-weight:600;color:var(--text-dim);margin:20px 0 8px;letter-spacing:0.5px;">INFRASTRUCTURE</div>
+
     <div class="priority-item">
       <div class="pri-rank" style="color:var(--red)">1</div>
       <div class="pri-body">
         <div class="pri-title">Fix Survivorship Bias</div>
         <div class="pri-impact" style="color:var(--red)">Impact: Critical</div>
-        <div class="pri-desc">Current universe uses today's S&P 500 constituents for historical backtests. Need delisted/removed tickers to eliminate survivorship bias and get realistic OOS metrics.</div>
+        <div class="pri-desc">91 fixed tickers back-tested to 2016 = known-survivor bias. Need historical S&amp;P 500 constituent data to remove delisted/removed tickers.</div>
       </div>
     </div>
 
     <div class="priority-item">
-      <div class="pri-rank" style="color:var(--red)">2</div>
+      <div class="pri-rank" style="color:var(--yellow)">2</div>
       <div class="pri-body">
-        <div class="pri-title">ML Upgrade Momentum</div>
-        <div class="pri-impact" style="color:var(--red)">Impact: Critical</div>
-        <div class="pri-desc">Direction 1 from MegaTrade next steps. Use LightGBM/XGBoost to enhance momentum signal with 171-dim features. Walk-forward CV to avoid lookahead.</div>
+        <div class="pri-title">Connect MegaTrade Research Gate</div>
+        <div class="pri-impact" style="color:var(--yellow)">Impact: Medium</div>
+        <div class="pri-desc">Wire gate.py 5-layer validation to autoresearch output. Currently only cost_x2 + stress. Need robust + ml_oos layers.</div>
       </div>
     </div>
 
     <div class="priority-item">
       <div class="pri-rank" style="color:var(--yellow)">3</div>
       <div class="pri-body">
-        <div class="pri-title">Connect Research Gate to AutoResearch</div>
-        <div class="pri-impact" style="color:var(--yellow)">Impact: Medium</div>
-        <div class="pri-desc">MegaTrade gate.py has 5-layer logic. Wire it so autoresearch results automatically pass through cost_x2 + robust + stress + ml_oos gates.</div>
-      </div>
-    </div>
-
-    <div class="priority-item">
-      <div class="pri-rank" style="color:var(--yellow)">4</div>
-      <div class="pri-body">
-        <div class="pri-title">Intraday Strategy VWAP</div>
-        <div class="pri-impact" style="color:var(--yellow)">Impact: Medium</div>
-        <div class="pri-desc">Develop VWAP-based intraday execution strategy. Reduce market impact on entries/exits, especially for larger position changes.</div>
-      </div>
-    </div>
-
-    <div class="priority-item">
-      <div class="pri-rank" style="color:var(--yellow)">5</div>
-      <div class="pri-body">
         <div class="pri-title">Event-Driven Risk Control</div>
         <div class="pri-impact" style="color:var(--yellow)">Impact: Medium</div>
-        <div class="pri-desc">Monitor VIX, oil, macro indicators. Auto-suggest hedging when thresholds breach. Reference's 3-button Discord UI (Execute/Pause/Cancel) is a good model.</div>
+        <div class="pri-desc">VIX spike / oil shock / macro event triggers. Auto-hedge suggestions. Reference: Discord 3-button UI (Execute/Pause/Cancel).</div>
       </div>
     </div>
 
     <div class="priority-item">
-      <div class="pri-rank" style="color:var(--green)">6</div>
+      <div class="pri-rank" style="color:var(--green)">4</div>
       <div class="pri-body">
         <div class="pri-title">Position Reconciliation</div>
         <div class="pri-impact" style="color:var(--green)">Impact: Low</div>
-        <div class="pri-desc">Compare local state vs Alpaca positions. Detect drift. Important for production but less urgent for paper trading phase.</div>
+        <div class="pri-desc">Local state vs Alpaca drift detection. Important for live but less urgent in paper trading phase.</div>
       </div>
     </div>
 
-    <div class="info-box" style="border-left-color:var(--green);">
-      <h4>Core Principle</h4>
-      <p><strong>Connect before build.</strong> We have 10 components as code that aren't used. Deploy Gate, Health Check, Runtime Monitor, and Pipeline are now active. Next focus: fix data quality (survivorship bias) and upgrade signal (ML momentum).</p>
+    <div class="info-box" style="border-left-color:var(--cyan);">
+      <h4>Strategy: Breakthrough + Connect</h4>
+      <p><strong>3 breakthrough directions identified.</strong> Pure price/volume optimization is at ceiling (v9.18 OOS Sharpe 2.13). Next alpha must come from: (B1) external data, (B2) ML overlay, or (B3) orthogonal intraday strategy. In parallel, connect the 10 MegaTrade modules that exist as code but aren't wired into the live system.</p>
     </div>
   </div>
 
@@ -1630,7 +1644,7 @@ body::after {
 
 <!-- FOOTER -->
 <div class="footer">
-  QTS // Quant Trading System Dashboard | 5-Layer Architecture | Updated 2026-03-29
+  QTS // Quant Trading System Dashboard | 5-Layer Architecture | Updated 2026-03-30
 </div>
 
 <script>
